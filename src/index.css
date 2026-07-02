@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "./styles/typography.css";
+
+@theme {
+  --color-dark: #1c1c1a;
+  --color-cream: #f8f5ef;
+  --color-gold: #b8954e;
+  --color-muted: #55524a;
+  --color-border: #d9d2c4;
+  --color-placeholder: #e5dfd2;
+
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Playfair Display", serif;
+}
+
+.slide-container::-webkit-scrollbar {
+  display: none;
+}
+
+.slide-container {
+  scrollbar-width: none;
+}
+
+.carousel-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-scroll {
+  scrollbar-width: none;
+}

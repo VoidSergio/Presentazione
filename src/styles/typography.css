@@ -1,0 +1,22 @@
+:root {
+    /* Titoli h2 delle sezioni */
+    --text-h2-lg: clamp(34px, 4.4vw, 66px);        /* slide 02 chi siamo */
+    --text-h2-md: clamp(30px, 3.8vw, 56px);        /* slide 03 cosa facciamo, slide 06 come lavoriamo */
+    --text-h2-clienti: clamp(30px, 4vw, 58px);     /* slide 04 clienti */
+    --text-h1-hero: clamp(40px, 6.4vw, 104px);     /* slide 07 contatti, il titolo più grande */
+  
+    /* Citazioni in corsivo */
+    --text-quote-cover: clamp(22px, 3vw, 44px);      /* slide 01 cover */
+    --text-quote-contatti: clamp(18px, 1.8vw, 28px); /* slide 07 contatti */
+  
+    /* Wordmark cover */
+    --text-wordmark: clamp(18px, 2.3vw, 36px);       /* "CONTRACT" in slide 01 */
+  
+    /* Numeri dei processi (01 02 03 04 in slide 06) */
+    --text-process-number: clamp(30px, 3vw, 46px);
+  
+    /* Titoli h3 delle card */
+    --text-h3-card: clamp(19px, 1.5vw, 26px);        /* slide 03 servizi */
+    --text-h3-process: clamp(18px, 1.4vw, 24px);     /* slide 06 step processo */
+    --text-h3-project: clamp(20px, 1.6vw, 28px);     /* slide 05 lavori scelti */
+  }
