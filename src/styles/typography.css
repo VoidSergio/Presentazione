@@ -19,4 +19,7 @@
     --text-h3-card: clamp(19px, 1.5vw, 26px);        /* slide 03 servizi */
     --text-h3-process: clamp(18px, 1.4vw, 24px);     /* slide 06 step processo */
     --text-h3-project: clamp(20px, 1.6vw, 28px);     /* slide 05 lavori scelti */
+
+    /* Valore contatto (slide 07) */
+    --text-contact-value: clamp(15px, 1.2vw, 19px);
   }

@@ -28,3 +28,53 @@
 .carousel-scroll {
   scrollbar-width: none;
 }
+
+/* Marquee loghi clienti (slide 04, solo mobile) — vedi LogoMarquee.jsx.
+   Sotto md il marquee sostituisce la griglia 4x3 (che resta desktop-only);
+   con prefers-reduced-motion al posto del marquee appare la griglia statica
+   compatta 3x4 (fallback), cosi' tutti e 12 i loghi restano visibili. */
+.marquee-zona {
+  display: none;
+}
+
+.marquee-fallback {
+  display: none;
+}
+
+@media (width < 48rem) {
+  .marquee-zona {
+    display: block;
+  }
+}
+
+@media (width < 48rem) and (prefers-reduced-motion: reduce) {
+  .marquee-zona {
+    display: none;
+  }
+
+  .marquee-fallback {
+    display: grid;
+  }
+}
+
+.marquee-dissolvenza {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+}
+
+.marquee-track {
+  animation: marquee-scorrimento 40s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track-inversa {
+  animation-duration: 55s;
+  animation-direction: reverse;
+}
+
+@keyframes marquee-scorrimento {
+  to {
+    transform: translateX(-50%);
+  }
+}
