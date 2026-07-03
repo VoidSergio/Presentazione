@@ -9,7 +9,7 @@ function SlideHeader({ numeroSlide, sfondo }) {
 
   return (
     <div className={'flex items-center justify-between text-xs tracking-widest uppercase font-sans ' + classeTesto}>
-      <span>Rilievo Contract</span>
+      <span translate="no">Rilievo Contract</span>
       <span>{numeroSlide}</span>
     </div>
   );

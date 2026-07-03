@@ -20,7 +20,7 @@ function CoverSlide({ hintScroll }) {
 
         <img src="/images/rilievo-white.png" alt="Rilievo" className="h-16 md:h-20" />
 
-        <span className="font-display font-medium uppercase tracking-[0.3em] text-gold text-[length:var(--text-wordmark)]">
+        <span translate="no" className="font-display font-medium uppercase tracking-[0.3em] text-gold text-[length:var(--text-wordmark)]">
           Contract
         </span>
 

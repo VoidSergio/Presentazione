@@ -22,7 +22,7 @@ function AboutSlide() {
           } />
 
           <p className="mt-4 md:mt-6 text-muted text-sm md:text-lg leading-relaxed max-w-xl">
-            Rilievo è il braccio contract di <span className="font-semibold">Sudlegno</span>:
+            Rilievo è il braccio contract di <span translate="no" className="font-semibold">Sudlegno</span>:
             tre generazioni di mani sul legno, oggi in showroom in Viale Trento a Cagliari.
             Progettiamo, produciamo e forniamo tutto ciò che riempie uno spazio — arredi,
             luce, tessuti, complementi. In Sardegna siamo gli unici a farlo con produzione
@@ -31,7 +31,7 @@ function AboutSlide() {
 
           <div className="mt-4 md:mt-8 flex items-center gap-3">
             <span className="text-xs tracking-widest uppercase font-sans text-dark/40">Un marchio</span>
-            <img src="/images/sudlegno.svg" alt="Sudlegno" className="h-6" />
+            <img src="/images/sudlegno.svg" alt="Sudlegno" translate="no" className="h-6" />
           </div>
         </div>
 

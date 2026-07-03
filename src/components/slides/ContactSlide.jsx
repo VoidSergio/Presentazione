@@ -75,7 +75,7 @@ function ContactSlide() {
           Portaci il progetto, o anche solo un'idea. Al resto pensiamo noi.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[clamp(20px,3vw,52px)] border-t border-cream/16 pt-[clamp(20px,3vh,32px)] mt-[clamp(24px,4vh,44px)]">
+        <div translate="no" className="grid grid-cols-1 md:grid-cols-3 gap-[clamp(20px,3vw,52px)] border-t border-cream/16 pt-[clamp(20px,3vh,32px)] mt-[clamp(24px,4vh,44px)]">
           {colonneContatto}
         </div>
       </div>
