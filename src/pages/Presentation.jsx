@@ -29,11 +29,11 @@ function Presentation() {
     <>
       <div ref={containerRef} className="slide-container h-screen overflow-y-scroll snap-y snap-mandatory">
         <CoverSlide hintScroll={hintCover} />
-        <AboutSlide />
+        <ProjectsSlide />
         <ServicesSlide />
         <ClientsSlide />
-        <ProjectsSlide />
         <WorkflowSlide />
+        <AboutSlide />
         <ContactSlide />
       </div>
       <NavigationDots slideAttiva={slideAttiva} vaiASlide={vaiASlide} />

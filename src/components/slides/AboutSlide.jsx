@@ -8,7 +8,7 @@ import PageTitle from '../ui/PageTitle';
 
 function AboutSlide() {
   return (
-    <SlideLayout numeroSlide="02" indiceSlide={1} sfondo="cream">
+    <SlideLayout numeroSlide="06" indiceSlide={5} sfondo="cream">
       <div className="grid grid-cols-1 md:grid-cols-[1.05fr_1fr] gap-6 md:gap-16 items-center w-full">
         <div>
           <SectionLabel testo="Chi siamo" />

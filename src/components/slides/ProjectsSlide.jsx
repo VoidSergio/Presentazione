@@ -30,7 +30,7 @@ function ProjectsSlide() {
   }
 
   return (
-    <SlideLayout numeroSlide="05" indiceSlide={4} sfondo="cream">
+    <SlideLayout numeroSlide="02" indiceSlide={1} sfondo="cream">
       <div className="w-full">
         <SectionLabel testo="Lavori scelti" />
 

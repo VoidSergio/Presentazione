@@ -29,7 +29,7 @@ function WorkflowSlide() {
   }
 
   return (
-    <SlideLayout numeroSlide="06" indiceSlide={5} sfondo="cream">
+    <SlideLayout numeroSlide="05" indiceSlide={4} sfondo="cream">
       <div className="w-full">
         <SectionLabel testo="Come lavoriamo" margine="mb-[clamp(10px,1.5vh,16px)]" />
 

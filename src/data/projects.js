@@ -1,14 +1,13 @@
-// projects.js: dati puri dei 3 lavori scelti per ProjectsSlide (slide 05).
-// Copy verbatim da copy-slides.md sezione "05 — Lavori scelti". Le foto
-// progetto extra (proj-baita, proj-suite, ecc.) restano fuori di proposito:
-// l'eventuale espansione oltre i 3 progetti e' decisione della task 10.
+// projects.js: dati puri dei 3 lavori scelti per ProjectsSlide (slide 02 dal
+// riordino). Le foto progetto extra restano fuori di proposito, l'eventuale
+// espansione oltre i 3 progetti e' decisione della task 10.
 export const projects = [
   {
-    eyebrow: 'Hotel 5★ · Cagliari',
-    titolo: 'Palazzo Doglio',
+    eyebrow: 'Wellness Resort · Fiuggi',
+    titolo: 'Palazzo Fiuggi',
     descrizione:
-      'Arredi su misura per camere e aree comuni. Legno lavorato in officina, coordinato con tessuti e illuminazione.',
-    file: 'proj-palazzodoglio.jpg',
+      'Arredi su misura per le aree wellness e gli spazi comuni. Materiali naturali, dettaglio sartoriale in ogni ambiente.',
+    file: 'proj-fiuggi.jpeg',
   },
   {
     eyebrow: 'Resort · Santa Margherita di Pula',
@@ -18,10 +17,10 @@ export const projects = [
     file: 'proj-resort.png',
   },
   {
-    eyebrow: 'Club & Hospitality · Porto Cervo',
-    titolo: 'Yacht Club Costa Smeralda',
+    eyebrow: 'Baita & Country Resort · Laconi',
+    titolo: 'Baita Maore',
     descrizione:
-      'Complementi e arredi per gli ambienti sociali. Dettaglio sartoriale, tenuta nel tempo.',
-    file: 'proj-yachtclub.jpg',
+      'Arredi in legno massello per un rifugio caldo e autentico. Comfort alpino, cura artigianale in ogni dettaglio.',
+    file: 'proj-baita.png',
   },
 ];

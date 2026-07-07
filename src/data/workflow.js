@@ -3,8 +3,8 @@
 export const workflow = [
   {
     numero: '01',
-    titolo: 'Rendering',
-    descrizione: "Vedi lo spazio prima che esista.",
+    titolo: 'Consulenza',
+    descrizione: 'Ascoltiamo, capiamo, troviamo la direzione giusta.',
   },
   {
     numero: '02',
