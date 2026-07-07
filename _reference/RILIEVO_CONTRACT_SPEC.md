@@ -82,12 +82,10 @@ src/
       NavigationDots.jsx     # dots laterali desktop, nascosti su mobile (hidden md:flex)
     ui/
       SectionLabel.jsx        # label piccola maiuscola oro (es. "CHI SIAMO")
-      GoldDivider.jsx
       PageTitle.jsx            # h2 Playfair Display, gestisce internamente il clamp corretto per slide
-      Card.jsx                 # card base generica: bordo, padding, usata come fondamenta da ServiceCard/ProjectCard/LogoCard
-      ServiceCard.jsx
+      ServiceCard.jsx          # stile diretto (border-t border-border), NON estende un Card generico
       LogoCard.jsx              # card bianca con logo cliente (era ClientLogoCard nella bozza precedente)
-      ProjectCard.jsx
+      ProjectCard.jsx          # stile diretto, nessun bordo/box
       ProcessStep.jsx
       MobileCarousel.jsx      # wrapper riutilizzabile per griglia 4-up -> swipe mobile
       ScrollHint.jsx          # hint verticale (cover) e orizzontale (carousel)
@@ -123,11 +121,25 @@ Nota sul naming: questa struttura riprende quella generata automaticamente da Cl
 (vedi export .zip del progetto), che separa Header/Footer/Dots come componenti singoli invece
 di accorparli in un solo `SlideDeck.jsx`. E' una decomposizione piu pulita, mantenuta qui.
 
-Nota su `data/slides.js`: Claude Design propone un file dati unico invece dei quattro separati
-(`services.js`, `clients.js`, ecc.) della bozza precedente. Entrambi gli approcci funzionano;
-un file unico e piu semplice da navigare per un progetto di 7 slide fisse, ma se in futuro il
-contenuto va riusato per altri output (es. post Instagram) puo comunque convenire tenere i dati
-divisi per categoria dentro lo stesso file, come oggetti separati esportati singolarmente:
+**Decisione presa in corso d'opera — niente `Card.jsx` generico, niente `GoldDivider.jsx`
+a se stante:** verificando l'HTML originale, `ServiceCard` (solo border-top, nessun box),
+`ProjectCard` (nessun bordo) e `LogoCard` (sfondo bianco pieno, nessuno stroke) sono tre
+trattamenti visivi troppo diversi tra loro per condividere una base comune — un `Card.jsx`
+avrebbe richiesto essere quasi interamente sovrascritto da ciascuno. Stessa cosa per
+`GoldDivider`: compare solo nella cover, mai altrove, quindi non vale la pena estrarlo come
+componente separato — resta una `<div>` inline dentro `CoverSlide.jsx`.
+
+Nota su `data/`: nel codice reale sono stati usati file separati per categoria
+(`clients.js`, `projects.js`, `workflow.js`, `contacts.js`), non un file unico
+`data/slides.js` come Claude Design aveva inizialmente proposto — scelta
+migliore se in futuro il contenuto va riusato per altri output (es. post
+Instagram), perche' ogni categoria resta isolata e importabile a se'.
+
+**Incoerenza da correggere**: i dati dei servizi (slide 03, "Cosa facciamo")
+sono rimasti hardcoded dentro `ServicesSlide.jsx`, mai estratti in un
+`services.js` — unica slide su 5 senza un file dati proprio, rompendo la
+convenzione seguita da tutte le altre. Da allineare quando si ha occasione
+(vedi task di manutenzione).
 
 ```js
 export const services = [ ... ];
@@ -241,7 +253,7 @@ pregressa da rispettare.
 
 ## 8. Ordine di sviluppo consigliato (una task alla volta con Claude Code)
 
-1. Setup tema: `tailwind.config.js` + `typography.css` con i clamp
+1. Setup tema: token colori/font in `@theme` dentro `src/index.css` (Tailwind v4, NON `tailwind.config.js` — vedi sezione 1) + `typography.css` con i clamp
 2. `Presentation.jsx` + `useSlideNavigation.js` — scroll-snap verticale, keyboard nav (senza contenuto reale, solo 7 slide vuote per testare la navigazione)
 3. `SlideLayout.jsx`, `SlideHeader.jsx`, `NavigationDots.jsx` — struttura comune riutilizzata da tutte le slide
 4. `ScrollHint.jsx` + `useFirstInteraction.js` — solo variante verticale, testata sulla cover

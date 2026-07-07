@@ -1,5 +1,7 @@
 // ServicesSlide: slide 03 "Cosa facciamo". Copy verbatim da copy-slides.md
-// sezione "03 — Cosa facciamo", icone SVG verbatim da service-icons.md.
+// sezione "03 — Cosa facciamo", dati puri (titolo/descrizione/chiave icona)
+// da data/services.js. Il markup SVG resta qui (non in data/): le icone sono
+// JSX, non dati puri, stesso motivo per cui contacts.js non contiene <br/>.
 // Orchestra internamente useFirstInteraction per l'hint orizzontale: il
 // carosello vive qui, quindi la responsabilita' della dismissal resta qui,
 // non risale a Presentation.jsx. Stesso pattern si applichera' a
@@ -11,6 +13,7 @@ import PageTitle from '../ui/PageTitle';
 import MobileCarousel from '../ui/MobileCarousel';
 import ServiceCard from '../ui/ServiceCard';
 import ScrollHint from '../ui/ScrollHint';
+import { services } from '../../data/services';
 
 const ICONA_HOTEL = (
   <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
@@ -40,41 +43,26 @@ const ICONA_VILLE = (
   </svg>
 );
 
-const SERVIZI = [
-  {
-    titolo: 'Hotel & Resort',
-    descrizione: "Camere, lobby, spa: gli ambienti che l'ospite ricorda e recensisce.",
-    icona: ICONA_HOTEL,
-  },
-  {
-    titolo: 'Ristoranti & Bar',
-    descrizione: 'Sale che riempiono i tavoli e reggono ogni servizio, sera dopo sera.',
-    icona: ICONA_RISTORANTI,
-  },
-  {
-    titolo: 'Retail & Flagship',
-    descrizione: 'Spazi vendita che fanno fermare, entrare e comprare.',
-    icona: ICONA_RETAIL,
-  },
-  {
-    titolo: 'Ville & Residenze',
-    descrizione: 'Case su misura, dal primo rendering alle chiavi in mano.',
-    icona: ICONA_VILLE,
-  },
-];
+// ICONE: associa la chiave stringa in data/services.js al markup JSX reale.
+const ICONE = {
+  hotel: ICONA_HOTEL,
+  ristoranti: ICONA_RISTORANTI,
+  retail: ICONA_RETAIL,
+  ville: ICONA_VILLE,
+};
 
 function ServicesSlide() {
   const { hasInteracted, markInteracted } = useFirstInteraction('scroll-orizzontale-visto');
 
   const card = [];
-  for (let indiceServizio = 0; indiceServizio < SERVIZI.length; indiceServizio += 1) {
-    const servizio = SERVIZI[indiceServizio];
+  for (let indiceServizio = 0; indiceServizio < services.length; indiceServizio += 1) {
+    const servizio = services[indiceServizio];
     card.push(
       <ServiceCard
         key={servizio.titolo}
         titolo={servizio.titolo}
         descrizione={servizio.descrizione}
-        icona={servizio.icona}
+        icona={ICONE[servizio.icona]}
       />,
     );
   }
