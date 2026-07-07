@@ -12,11 +12,11 @@
 
 1. Palazzo Doglio — logo-palazzodoglio.png — 82% — 60%
 2. ForteVillage — logo-fortevillage.png — 82% — 58%
-3. Yacht Club Costa Smeralda — logo-yachtclub.png — 92% — 84%
+3. Yacht Club Costa Smeralda — logo-yachtclub.png — 120% — 120%
 4. Hotel Carlos V — logo-carlosv.png — 94% — 94%
-5. Palazzo Fiuggi — logo-palazzofiuggi.png — 82% — 72%
+5. Palazzo Fiuggi — logo-palazzofiuggi.png — 90% — 90%
 6. Baita Maore Laconi — logo-baitamaore.png — 82% — 72%
-7. Prada Luna Rossa — logo-prada.png — 90% — 74%
+7. Prada Luna Rossa — logo-prada.png — 140% — 140%
 8. Rinascente — logo-rinascente.png — 82% — 40%
 9. IED — logo-ied.png — 64% — 56%
 10. Roncato — logo-roncato.png — 80% — 44%
