@@ -2,6 +2,8 @@
 // nascosta su mobile. Montata una sola volta in Presentation.jsx, fuori
 // dal ciclo delle slide (nell'HTML originale e' un fratello del container
 // scrollabile, position: fixed, non un componente ripetuto per slide).
+import { trackEvent } from '../../utils/analytics';
+
 const NUMERO_TOTALE_SLIDE = 7;
 
 function NavigationDots({ slideAttiva, vaiASlide }) {
@@ -19,6 +21,7 @@ function NavigationDots({ slideAttiva, vaiASlide }) {
         aria-label={'Vai alla slide ' + (indiceSlide + 1)}
         className={classeDot}
         onClick={function alClick() {
+          trackEvent('nav_dot_click', { target_slide: indiceSlide + 1 });
           vaiASlide(indiceSlide);
         }}
       />,

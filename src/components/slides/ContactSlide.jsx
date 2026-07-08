@@ -7,6 +7,22 @@ import SlideLayout from '../layout/SlideLayout';
 import SectionLabel from '../ui/SectionLabel';
 import PageTitle from '../ui/PageTitle';
 import { contacts } from '../../data/contacts';
+import { trackEvent } from '../../utils/analytics';
+
+// gestisciClickContatto: type derivato dal prefisso dell'href (tel:/mailto:),
+// dato che esiste gia' nei dati — niente parametro esplicito duplicato.
+function gestisciClickContatto(href) {
+  let tipo = null;
+  if (href.indexOf('tel:') === 0) {
+    tipo = 'phone';
+  } else if (href.indexOf('mailto:') === 0) {
+    tipo = 'email';
+  }
+
+  if (tipo !== null) {
+    trackEvent('contact_click', { type: tipo });
+  }
+}
 
 function ContactSlide() {
   const titolo = (
@@ -36,6 +52,9 @@ function ContactSlide() {
         <a
           href={contatto.href}
           className="text-cream text-[length:var(--text-contact-value)] leading-[1.4]"
+          onClick={function alClick() {
+            gestisciClickContatto(contatto.href);
+          }}
         >
           {valoreConARiga}
         </a>

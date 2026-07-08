@@ -8,6 +8,7 @@
 // chiave (es. la 03 quando si fa swipe sulla 05) si aggiornano subito,
 // senza aspettare un reload.
 import { useState, useEffect } from 'react';
+import { trackEvent } from '../utils/analytics';
 
 function useFirstInteraction(chiave) {
   const [hasInteracted, setHasInteracted] = useState(function leggiStatoIniziale() {
@@ -33,9 +34,31 @@ function useFirstInteraction(chiave) {
   }, [chiave]);
 
   function markInteracted() {
+    // eraNonVisto: letto PRIMA di aggiornare lo stato. Serve a tracciare
+    // scroll_hint_outcome una sola volta per meccanismo, non una volta per
+    // ogni istanza del hook che condivide la stessa chiave (es. i
+    // caroselli di 03/05/06 condividono 'scroll-orizzontale-visto' — solo
+    // il primo a essere swipato deve generare l'evento, gli altri
+    // ricevono solo la sincronizzazione via 'hint-visto').
+    const eraNonVisto = hasInteracted === false;
+
     sessionStorage.setItem(chiave, 'true');
     setHasInteracted(true);
     window.dispatchEvent(new CustomEvent('hint-visto', { detail: chiave }));
+
+    if (eraNonVisto === true) {
+      let variant = 'unknown';
+      if (chiave === 'scroll-verticale-visto') {
+        variant = 'vertical';
+      } else if (chiave === 'scroll-orizzontale-visto') {
+        variant = 'horizontal';
+      }
+
+      // method e' sempre 'interaction': non esiste un percorso di timeout
+      // nel codice attuale. Il campo resta per compatibilita' futura, non
+      // eliminarlo solo perche' oggi ha un solo valore possibile.
+      trackEvent('scroll_hint_outcome', { variant: variant, method: 'interaction' });
+    }
   }
 
   return { hasInteracted, markInteracted };

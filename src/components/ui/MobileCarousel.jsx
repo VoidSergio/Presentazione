@@ -1,10 +1,17 @@
 // MobileCarousel: wrapper riutilizzabile per griglia 4-up che diventa swipe
 // orizzontale su mobile. Sotto md: torna a griglia normale. Usato dalla
 // slide 03 "Cosa facciamo" e 06 "Come lavoriamo".
+// numeroSlide: stesso valore letterale che il componente slide genitore
+// passa gia' a SlideLayout (es. "03") — non un secondo canale per sapere
+// "che slide e' questa", solo passato in giu' un livello in piu' per
+// l'evento carousel_swipe.
 import { useEffect, useRef } from 'react';
+import { trackEvent } from '../../utils/analytics';
 
-function MobileCarousel({ children, colonneDesktop, gap, onPrimoScrollOrizzontale }) {
+function MobileCarousel({ children, colonneDesktop, gap, onPrimoScrollOrizzontale, numeroSlide }) {
   const containerRef = useRef(null);
+  const indiceCardRef = useRef(0);
+  const timeoutDebounceRef = useRef(null);
 
   let classeColonneDesktop = 'md:grid-cols-4';
   if (colonneDesktop === 3) {
@@ -30,12 +37,44 @@ function MobileCarousel({ children, colonneDesktop, gap, onPrimoScrollOrizzontal
       }
     }
 
+    // carousel_swipe: niente evento 'scrollend' (non supportato su iOS
+    // Safari, vedi spec sezione nested scroll-snap) — debounce manuale sul
+    // 'scroll', spara solo quando l'indice assestato cambia davvero.
+    function gestisciScrollAssestato() {
+      if (timeoutDebounceRef.current !== null) {
+        clearTimeout(timeoutDebounceRef.current);
+      }
+
+      timeoutDebounceRef.current = setTimeout(function calcolaIndiceAssestato() {
+        const larghezzaCard = container.scrollWidth / children.length;
+        let indiceAssestato = Math.round(container.scrollLeft / larghezzaCard);
+        if (indiceAssestato < 0) {
+          indiceAssestato = 0;
+        } else if (indiceAssestato > children.length - 1) {
+          indiceAssestato = children.length - 1;
+        }
+
+        if (indiceAssestato !== indiceCardRef.current) {
+          indiceCardRef.current = indiceAssestato;
+          trackEvent('carousel_swipe', {
+            slide_number: numeroSlide,
+            card_index: indiceAssestato,
+          });
+        }
+      }, 150);
+    }
+
     container.addEventListener('scroll', gestisciPrimoScroll, { once: true });
+    container.addEventListener('scroll', gestisciScrollAssestato);
 
     return function pulisci() {
       container.removeEventListener('scroll', gestisciPrimoScroll);
+      container.removeEventListener('scroll', gestisciScrollAssestato);
+      if (timeoutDebounceRef.current !== null) {
+        clearTimeout(timeoutDebounceRef.current);
+      }
     };
-  }, [onPrimoScrollOrizzontale]);
+  }, [onPrimoScrollOrizzontale, numeroSlide, children.length]);
 
   const cardAvvolte = [];
   for (let indiceCard = 0; indiceCard < children.length; indiceCard += 1) {

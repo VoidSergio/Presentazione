@@ -1,6 +1,6 @@
 # Rilievo Contract — Stato del progetto (presentazione + email marketing)
 
-Ultimo aggiornamento: luglio 2026. Documento di riferimento per riprendere il
+Ultimo aggiornamento: 08/07/2026. Documento di riferimento per riprendere il
 lavoro in qualunque sessione futura, senza dover ricostruire il contesto da zero.
 
 ---
@@ -154,16 +154,99 @@ sito stesso.
 
 ---
 
-## 4. Prossimi passi da studiare (solo promemoria, piano dettagliato da fare a parte)
+## 4. Modifiche alla presentazione (08/07/2026)
+
+Cinque modifiche mirate al deck esistente, verificate una per una in browser
+prima del commit:
+
+1. **Riordino slide**: scambiate le posizioni di `ProjectsSlide` ("Lavori
+   scelti") e `AboutSlide` ("Chi siamo"). Nuovo ordine: 01 Cover, 02 Lavori
+   scelti, 03 Cosa facciamo, 04 Clienti, 05 Come lavoriamo, 06 Chi siamo, 07
+   Contatti. Aggiornati `numeroSlide`/`indiceSlide` in ogni componente slide
+   coinvolto e l'ordine di montaggio in `Presentation.jsx`. `NavigationDots`
+   non ha richiesto modifiche: i dot sono generici (aria-label numerico via
+   loop), non hanno un array di label testuali da riallineare.
+2. **Cover — logo ingrandito**: rimossa la label "Un brand Sudlegno · tre
+   generazioni sul legno" sopra il logo; il logo `rilievo-white.png` è
+   passato da `h-16 md:h-20` a `h-32 md:h-40`, testato visivamente con più
+   valori intermedi (non calcolato a tavolino) e verificato senza overflow
+   fino a viewport 375×568.
+3. **Workflow, step 1**: titolo "Rendering" → "Consulenza", descrizione
+   "Vedi lo spazio prima che esista." → "Ascoltiamo, capiamo, troviamo la
+   direzione giusta." (`data/workflow.js`).
+4. **Lavori scelti, sostituzione 1**: Palazzo Doglio → Palazzo Fiuggi
+   (eyebrow "Wellness Resort · Fiuggi", immagine `proj-fiuggi.jpeg` — **non
+   `.jpg`**, verificato il nome file reale prima di referenziarlo).
+5. **Lavori scelti, sostituzione 2**: Yacht Club Costa Smeralda → Baita
+   Maore (eyebrow "Baita & Country Resort · Laconi", immagine
+   `proj-baita.png`, asset già presente ma non ancora usato).
+
+---
+
+## 5. Tracciamento analytics (08/07/2026)
+
+### Stack
+- **Consent Mode v2** (Google) — default `denied` su
+  `analytics_storage`/`ad_storage`/`ad_user_data`/`ad_personalization`,
+  impostato inline come primo script della pagina, prima di qualunque script
+  Google
+- **Silktide Consent Manager** (self-hosted via jsdelivr CDN, `v2.0.1`) —
+  banner di consenso, integrato con Consent Mode via l'opzione `gtag:
+  "analytics_storage"` sul consentType "analytics". Una sola categoria oltre
+  agli essenziali (niente "marketing": non si usano Google Ads/remarketing).
+  Palette del banner allineata al brand (`--primaryColor: #b8954e`)
+- **GA4** — measurement ID `G-5GDZR18LN8`, sempre caricato ma in modalità
+  "advanced" di Consent Mode: con consenso negato manda solo ping anonimi
+  senza cookie, non blocchiamo lo script stesso lato client
+
+Tutti e tre in `index.html`, nell'ordine esatto sopra (l'ordine è critico:
+il consent default deve precedere gtag.js, che deve precedere Silktide).
+
+### Verifica fatta (test-gate prima di procedere)
+Con `defaultValue: false` sul consentType analytics, confermato in browser
+(profilo pulito, `localStorage` **e** cookie svuotati — il consenso Silktide
+vive in `localStorage`, non solo nei cookie, va pulito esplicitamente per
+un retest pulito):
+- Nessun cookie `_ga*` e `gcs=G100` (tutto negato) su ogni richiesta prima
+  di qualunque interazione con il banner
+- "Accetta tutti" → `gcs=G101`, cookie `_ga`/`_ga_5GDZR18LN8` creati
+- "Rifiuta non essenziali" → nessun cookie `_ga*`
+- Entrambe le scelte persistono dopo reload (banner non ricompare)
+
+### Eventi custom implementati
+
+| Evento | File | Note |
+|---|---|---|
+| `slide_view` | `hooks/useSlideNavigation.js` | `slide_number` (1-7), `slide_name` (es. "lavori-scelti", riflette il nuovo ordine) |
+| `slide_time_spent` | `hooks/useSlideNavigation.js` | Calcolato sulla slide precedente ad ogni cambio. Limite noto: il tempo sull'ultima slide prima della chiusura tab non viene mai inviato (nessun `pagehide`/`beforeunload` agganciato) — compromesso accettato |
+| `contact_click` | `slides/ContactSlide.jsx` | `type` (`phone`/`email`) derivato dal prefisso dell'`href` (`tel:`/`mailto:`), non un parametro duplicato |
+| `full_presentation_viewed` | `hooks/useSlideNavigation.js` | Una sola volta per sessione. Semantica: "è arrivato in fondo al deck", NON "ha visto tutte le slide in sequenza" — se si salta direttamente all'ultima slide (es. tasto End appena caricata la pagina) l'evento scatta comunque. Deciso consapevolmente di non tracciare le slide già viste per la lettura più stretta |
+| `carousel_swipe` | `ui/MobileCarousel.jsx` | `slide_number`, `card_index`. `slide_number` è lo stesso valore letterale che il componente slide genitore passa già a `SlideLayout` (es. `"03"`) — passato giù come prop, non derivato una seconda volta. Debounce manuale da 150ms sull'evento `scroll` invece di `scrollend` (non supportato su iOS Safari) |
+| `nav_dot_click` | `layout/NavigationDots.jsx` | `target_slide` |
+| `scroll_hint_outcome` | `hooks/useFirstInteraction.js` | `variant` (`vertical`/`horizontal`), `method` (sempre `interaction` per ora, nessun percorso di timeout esiste nel codice). Tracciato solo alla transizione reale `false→true`, non ad ogni chiamata di `markInteracted` — evita duplicati quando più caroselli condividono la stessa chiave sessionStorage (03/05/06 condividono `scroll-orizzontale-visto`) |
+
+### Provenienza email (parametro `ref`)
+- `utils/trackingRef.js`: legge `?ref=CODICE` dall'URL una sola volta al
+  caricamento, tenuto in una variabile di modulo — **mai** in
+  localStorage/sessionStorage (dato potenzialmente collegabile a un
+  destinatario specifico, non deve sopravvivere oltre la sessione del tab)
+- `utils/analytics.js`: espone `trackEvent(nome, parametri)`, punto unico da
+  cui partono tutti gli eventi sopra; aggiunge `ref` ai parametri quando
+  presente
+- La corrispondenza codice → destinatario reale resta SOLO in un foglio
+  separato, mai nel codice sorgente (invariato rispetto al piano)
+
+---
+
+## 6. Prossimi passi da studiare (solo promemoria, piano dettagliato da fare a parte)
 
 Punti discussi ma non ancora pianificati in dettaglio — da riprendere con lo
-stesso approccio usato per l'email (piano scritto, poi implementazione):
+stesso approccio usato per l'email e per il tracciamento (piano scritto,
+poi implementazione):
 
-- **Tracciamento drop-off per slide**: sapere a quale slide gli utenti
-  smettono di guardare (infrastruttura già pronta lato codice, manca solo
-  l'aggancio a un evento analytics)
 - **Microsoft Clarity**: heatmap, movimento del mouse, registrazioni di
-  sessione reali — gratuito, un solo script da aggiungere
+  sessione reali — gratuito, un solo script da aggiungere, da gatare con lo
+  stesso consenso "analytics" già impostato per GA4
 - **Link personalizzati per destinatario**: per sapere non solo "qualcuno ha
   cliccato" ma "quale azienda/persona specifica" — utile solo per invii
   mirati a pochi contatti, non per liste ampie

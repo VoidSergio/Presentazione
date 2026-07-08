@@ -39,6 +39,7 @@ function ProjectsSlide() {
             colonneDesktop={3}
             gap="gap-[clamp(24px,2.6vw,44px)]"
             onPrimoScrollOrizzontale={markInteracted}
+            numeroSlide="02"
           >
             {card}
           </MobileCarousel>

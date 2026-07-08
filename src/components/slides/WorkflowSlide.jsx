@@ -44,6 +44,7 @@ function WorkflowSlide() {
           colonneDesktop={4}
           gap="gap-[clamp(20px,2.4vw,44px)]"
           onPrimoScrollOrizzontale={markInteracted}
+          numeroSlide="05"
         >
           {card}
         </MobileCarousel>
