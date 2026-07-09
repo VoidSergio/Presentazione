@@ -6,7 +6,8 @@
     --text-h1-hero: clamp(40px, 6.4vw, 104px);     /* slide 07 contatti, il titolo più grande */
   
     /* Citazioni in corsivo */
-    --text-quote-cover: clamp(22px, 3vw, 44px);      /* slide 01 cover */
+    --text-quote-cover: clamp(34px, 3vw, 44px);      /* slide 01 cover */
+    --text-quote-coverh2: clamp(18px, 1.8vw, 23px); /* slide 01 cover h2 */
     --text-quote-contatti: clamp(18px, 1.8vw, 28px); /* slide 07 contatti */
   
     /* Wordmark cover */

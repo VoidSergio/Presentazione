@@ -29,7 +29,7 @@ function ContactSlide() {
     <>
       Parliamo del tuo
       <br />
-      <span className="text-gold">prossimo spazio.</span>
+      <span className="text-gold">prossimo progetto.</span>
     </>
   );
 
@@ -91,7 +91,7 @@ function ContactSlide() {
         />
 
         <p className="font-display italic text-cream/80 text-[length:var(--text-quote-contatti)] max-w-[36ch]">
-          Portaci il progetto, o anche solo un'idea. Al resto pensiamo noi.
+          Portaci una visione, un disegno, una richiesta del cliente. Noi la trasformiamo in una realizzazione concreta, restando al fianco del tuo studio.
         </p>
 
         <div translate="no" className="grid grid-cols-1 md:grid-cols-3 gap-[clamp(20px,3vw,52px)] border-t border-cream/16 pt-[clamp(20px,3vh,32px)] mt-[clamp(24px,4vh,44px)]">

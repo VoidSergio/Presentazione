@@ -3,18 +3,18 @@
 export const workflow = [
   {
     numero: '01',
-    titolo: 'Consulenza',
-    descrizione: 'Ascoltiamo, capiamo, troviamo la direzione giusta.',
+    titolo: 'Analisi',
+    descrizione: 'Studiamo il progetto, i vincoli e gli obiettivi insieme al vostro studio.',
   },
   {
     numero: '02',
-    titolo: 'Progetto',
-    descrizione: 'Materiali, misure, budget: tutto definito.',
+    titolo: 'Sviluppo',
+    descrizione: 'Trasformiamo disegni e concept in soluzioni realizzabili, misurabili e coerenti.',
   },
   {
     numero: '03',
     titolo: 'Produzione & selezione',
-    descrizione: 'Officina propria e i migliori brand, insieme.',
+    descrizione: 'Coordiniamo su misura, forniture, materiali e brand selezionati.',
   },
   {
     numero: '04',

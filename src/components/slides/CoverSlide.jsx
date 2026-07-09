@@ -24,7 +24,11 @@ function CoverSlide({ hintScroll }) {
         <div className="w-16 h-px bg-gold" />
 
         <p className="font-display font-medium italic text-cream text-[length:var(--text-quote-cover)] max-w-3xl">
-          Il tuo spazio merita di durare quanto il tuo nome.
+          Il tuo progetto merita un esecuzione all’altezza della tua firma.
+        </p>
+
+        <p className="font-display italic text-cream/80 text-[length:var(--text-quote-coverh2)] max-w-[36ch]">
+          Al fianco degli studi di architettura, per trasformare ogni visione in un risultato concreto, elegante e fedele al progetto.
         </p>
       </div>
       {hintScroll}

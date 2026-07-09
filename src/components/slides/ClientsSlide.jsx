@@ -31,11 +31,11 @@ function ClientsSlide() {
       <div className="w-full">
         <SectionLabel testo="I nostri clienti" />
 
-        <PageTitle variante="clienti" className="text-cream" testo="I posti dove non puoi sbagliare un dettaglio." />
+        <PageTitle variante="clienti" className="text-cream" testo="Lavoriamo dove ogni dettaglio conta." />
 
         <p className="mt-3 md:mt-5 max-w-2xl text-cream/50 text-sm leading-relaxed">
-          Hotel a cinque stelle, resort, boutique e brand che curano ogni dettaglio
-          come lo curiamo noi. Dalla Sardegna a Milano, da Porto Cervo a Fiuggi.
+          Affianchiamo studi di architettura, committenze e brand nella realizzazione di ambienti in cui estetica,
+          funzione e cura del dettaglio devono parlare la stessa lingua.
         </p>
 
         <div className="mt-4 md:mt-10">
@@ -45,6 +45,11 @@ function ClientsSlide() {
 
           <LogoMarquee clienti={clients} />
         </div>
+
+        <p className="mt-3 md:mt-5 max-w-2xl text-cream/50 text-sm leading-relaxed">
+          Una selezione di realtà, progetti e contesti nei quali abbiamo portato competenza esecutiva, forniture e soluzioni su misura.
+        </p>
+
       </div>
     </SlideLayout>
   );

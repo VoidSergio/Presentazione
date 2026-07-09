@@ -72,7 +72,7 @@ function ServicesSlide() {
       <div className="w-full">
         <SectionLabel testo="Cosa facciamo" />
 
-        <PageTitle variante="md" testo="Dove le persone si fermano, noi c'eravamo prima." />
+        <PageTitle variante="md" testo="Al fianco dei progettisti, dove le idee diventano spazi da vivere." />
 
         <div className="mt-8 md:mt-10">
           <MobileCarousel
