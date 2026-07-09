@@ -23,8 +23,8 @@ function AboutSlide() {
 
           <p className="mt-4 md:mt-6 text-muted text-sm md:text-lg leading-relaxed max-w-xl">
             Rilievo è il braccio contract di <span translate="no" className="font-semibold">Sudlegno</span>:
-            tre generazioni di mani sul legno, oggi in showroom in Viale Trento a Cagliari.
-            Progettiamo, produciamo e forniamo tutto ciò che riempie uno spazio — arredi,
+            tre generazioni di mani sul legno, oggi con uno showroom in Viale Trento a Cagliari.
+            Produciamo e forniamo tutto ciò che riempie uno spazio — arredi,
             luce, tessuti, complementi. In Sardegna siamo gli unici a farlo con produzione
             artigianale interna.
           </p>
