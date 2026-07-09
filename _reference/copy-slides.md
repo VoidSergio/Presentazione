@@ -1,3 +1,5 @@
+> **Questi testi sono per il pubblico COLLABORATORI, branch `collaboratori` — non applicare a `main` senza rivedere.**
+
 # Copy verbatim — Rilievo Contract
 
 Testo reale di ogni slide, estratto dall'HTML sorgente originale. Solo contenuto,

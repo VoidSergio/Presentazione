@@ -1,3 +1,5 @@
+> **Questi testi sono per il pubblico COLLABORATORI, branch `collaboratori` — non applicare a `main` senza rivedere.**
+
 # Rilievo Contract — Spec tecnica del progetto
 
 Documento di riferimento per lo sviluppo. Da tenere nel repo e passare a Claude Code
