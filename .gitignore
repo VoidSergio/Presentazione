@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Mappatura ref -> contatto reale: mai nel repository
+# (vedi _reference/PIANO_TRACCIAMENTO_ANALYTICS.md, sezione "Parametro ref")
+generatore_email.html
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
