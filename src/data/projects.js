@@ -14,7 +14,7 @@ export const projects = [
     titolo: 'ForteVillage',
     descrizione:
       'Fornitura contract per gli spazi ospitalità. Chiavi in mano, dalla selezione dei materiali alla posa.',
-    file: 'proj-resort.png',
+    file: 'fort-proj.jpg',
   },
   {
     eyebrow: 'Baita & Country Resort · Laconi',

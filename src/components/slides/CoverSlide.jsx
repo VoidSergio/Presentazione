@@ -7,7 +7,7 @@ import SlideFooter from '../layout/SlideFooter';
 function CoverSlide({ hintScroll }) {
   const footer = (
     <SlideFooter
-      sinistra="Design & fornitura contract · Cagliari, Sardegna"
+      sinistra="ESECUZIONE - ARREDI SU MISURA - FORNITURA CONTRACT"
       sfondo="dark"
     />
   );

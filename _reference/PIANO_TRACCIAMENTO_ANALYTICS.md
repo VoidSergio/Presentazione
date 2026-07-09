@@ -9,8 +9,10 @@ implementazione verificata pezzo per pezzo.
 ## Decisioni prese
 
 1. **Si useranno i cookie** — banner di consenso necessario (GDPR/ePrivacy)
-2. **Banner**: CookieYes (piano gratuito, fino a 25.000 pageview/mese —
-   ampiamente sufficiente), integrato nativamente con Google Consent Mode v2
+2. **Banner**: Silktide Consent Manager (gratuito, supporta nativamente Google
+   Consent Mode v2 — confermato dalla loro pagina prodotto), sostituisce la
+   scelta iniziale CookieYes/Klaro (quelle avevano soglie a pagamento oltre
+   un certo traffico, Silktide si dichiara gratuito senza limiti)
 3. **Analytics**: Google Analytics 4, gated dal consenso
 4. **Heatmap/registrazioni sessione**: Microsoft Clarity, gated dal consenso
    (categoria "analytics" nel banner)
@@ -82,6 +84,30 @@ Automatici via GA4, nessun codice richiesto: `session_start`, `first_visit`,
   in storage), esposto a tutti gli eventi sopra
 
 ---
+
+## Rimandato a più avanti (deciso consapevolmente)
+
+**1. Link con redirect + parametri offuscati** — attualmente i link email hanno
+solo `?ref=CODICE` visibile nella barra indirizzi. Idea valutata ma rimandata:
+un redirect lato Netlify (`presentazione.rilievocontract.it/r/CODICE` →
+`/?ref=CODICE&utm_source=gmail&utm_medium=email&utm_campaign=CODICE_CAMPAGNA`)
+con pulizia dell'URL visibile via `history.replaceState` dopo il caricamento.
+Motivo del rimando: nessuna urgenza, il tracciamento attuale con solo `ref`
+funziona già bene, questo è un miglioramento estetico/di discrezione, non
+funzionale. Se implementato in futuro: verificare con un test esplicito che
+`history.replaceState` non generi un secondo `page_view` spurio in GA4 (la
+Misurazione avanzata attiva potrebbe in teoria reagire al cambio di URL anche
+se il path resta identico e cambiano solo i parametri — da confermare con un
+test, non assumere).
+
+**2. Microsoft Clarity** — heatmap e registrazioni di sessione, per capire
+non solo *cosa* fanno i visitatori (già coperto da GA4) ma *come* interagiscono
+visivamente (dove esitano, dove si bloccano). Da agganciare al consenso
+Silktide (categoria "analytics", stessa già usata per GA4) con un test-gate
+identico a quello già fatto per GA4 (denied di default, si attiva solo dopo
+accettazione). Bloccato in attesa che il capo crei il progetto Clarity con
+l'account `rilievocontract@gmail.com` e inviti Se come collaboratore (stesso
+schema già usato per l'accesso a GA4) — nessuna fretta.
 
 ## Cosa NON fare (promemoria)
 - Non salvare il parametro `ref` in localStorage/sessionStorage — resta solo
