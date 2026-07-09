@@ -154,14 +154,17 @@ export const workflow = [ ... ];
 
 ## 3. Comportamento responsive per slide
 
+Ordine post-riordino dell'08/07/2026 (scambiate "Lavori scelti" e "Chi siamo",
+vedi STATO_PROGETTO_PRESENTAZIONE_E_MARKETING.md sezione 4).
+
 | Slide | Desktop | Mobile |
 |---|---|---|
 | 01 Cover | invariato, clamp scala da solo | invariato |
-| 02 Chi siamo | grid `1.05fr 1fr`, foto `aspect-[4/5]` | `grid-cols-1`, foto sotto il testo. **Crop diverso da desktop, intenzionale:** `aspect-[4/3]` invece di `4/5`, foto a `w-full` con altezza determinata dal rapporto (non altezza fissa con larghezza libera — quello causava una deformazione non voluta). Deciso dopo test visivo: il crop più orizzontale copre meglio la larghezza su schermo stretto. Mantenere lo stesso `object-position` del desktop. |
+| 02 Lavori scelti | `grid-cols-3`, gap `clamp(24px,2.6vw,44px)` | **Carosello confermato** (non più ipotetico): `MobileCarousel colonneDesktop={3}`, stesso pattern di 03/05. Aritmetica: una card ~355px, tre impilate ≈1100px contro ~720px utili — overflow certo con `grid-cols-1`. `ScrollHint variant="horizontal"` incluso, stessa chiave sessionStorage condivisa con 03/05. |
 | 03 Cosa facciamo | `grid-cols-4` | `MobileCarousel`: swipe orizzontale, 1 card per volta (`flex-none w-[78%] snap-start`) |
-| 04 Clienti | `grid-cols-4` x3 righe | `grid-cols-2` (loghi, non serve carosello: sono immagini piccole) |
-| 05 Lavori scelti | `grid-cols-3`, gap `clamp(24px,2.6vw,44px)` | **Carosello confermato** (non più ipotetico): `MobileCarousel colonneDesktop={3}`, stesso pattern di 03/06. Aritmetica: una card ~355px, tre impilate ≈1100px contro ~720px utili — overflow certo con `grid-cols-1`. `ScrollHint variant="horizontal"` incluso, stessa chiave sessionStorage condivisa con 03/06. |
-| 06 Come lavoriamo | `grid-cols-4` | `MobileCarousel` (stesso pattern di 03) |
+| 04 Clienti | `grid-cols-4` x3 righe | `LogoMarquee` (variante "Vetrina"): due righe a scorrimento automatico continuo in direzioni opposte, dissolvenza ai bordi, rispetta `prefers-reduced-motion` — la griglia statica non stava in 100vh nemmeno a `grid-cols-2` |
+| 05 Come lavoriamo | `grid-cols-4` | `MobileCarousel` (stesso pattern di 03) |
+| 06 Chi siamo | grid `1.05fr 1fr`, foto `aspect-[4/5]` | `grid-cols-1`, foto sotto il testo. **Crop diverso da desktop, intenzionale:** `aspect-[4/3]` invece di `4/5`, foto a `w-full` con altezza determinata dal rapporto (non altezza fissa con larghezza libera — quello causava una deformazione non voluta). Deciso dopo test visivo: il crop più orizzontale copre meglio la larghezza su schermo stretto. Mantenere lo stesso `object-position` del desktop. |
 | 07 Contatti | `grid-cols-3` | `grid-cols-1` |
 
 `MobileCarousel` e riutilizzabile: prende un array di children e sotto `md:` torna

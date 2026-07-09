@@ -1,5 +1,7 @@
 # Dati precisi — slide 07 "Contatti"
 
+> Testi allineati al branch `collaboratori` il 09/07/2026.
+
 ## Label e titolo
 - SectionLabel "Parliamone": margin-bottom clamp(18px, 2.6vh, 30px) — override
   necessario, come già fatto per WorkflowSlide
@@ -7,7 +9,7 @@
   deck: 40px-104px), font-weight 700, line-height 0.98 (più stretto del default
   1.04 usato altrove — override necessario anche su line-height, non solo margine)
   margin-bottom: clamp(20px, 3vh, 30px)
-  Testo: "Parliamo del tuo" + <br> + "prossimo spazio." — SOLO "prossimo spazio."
+  Testo: "Parliamo del tuo" + <br> + "prossimo progetto." — SOLO "prossimo progetto."
   è in oro (#b8954e), il resto resta nel colore testo normale (cream). Serve uno
   span interno colorato, non tutto il titolo in un colore solo.
 - Citazione in corsivo: usa --text-quote-contatti (già presente), Playfair

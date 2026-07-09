@@ -1,4 +1,7 @@
-# Dati precisi — slide 06 "Come lavoriamo"
+# Dati precisi — slide 05 "Come lavoriamo"
+
+> Posizione post-riordino dell'08/07/2026: questa slide è la 05 del deck
+> (era la 06). Testi allineati al branch `collaboratori` il 09/07/2026.
 
 ## Label e titolo
 - SectionLabel "Come lavoriamo": margin-bottom clamp(10px, 1.5vh, 16px)
@@ -26,15 +29,15 @@
   (identico a ProjectCard, non un nuovo valore)
 
 ## I 4 step (numero — titolo — descrizione)
-1. **Rendering** — "Vedi lo spazio prima che esista."
-2. **Progetto** — "Materiali, misure, budget: tutto definito."
-3. **Produzione & selezione** — "Officina propria e i migliori brand, insieme."
+1. **Analisi** — "Studiamo il progetto, i vincoli e gli obiettivi insieme al vostro studio."
+2. **Sviluppo** — "Trasformiamo disegni e concept in soluzioni realizzabili, misurabili e coerenti."
+3. **Produzione & selezione** — "Coordiniamo su misura, forniture, materiali e brand selezionati."
 4. **Consegna** — "Montaggio e posa. Chiavi in mano."
 
 ## Note struttura
-- Nessun SlideFooter (come slide 02, 03)
+- Nessun SlideFooter (come slide 02 "Lavori scelti" e 03 "Cosa facciamo")
 - Su mobile: MobileCarousel colonneDesktop={4}, stesso pattern di ServicesSlide
   ma NON riusare ServiceCard — il border-top ha colore diverso, serve ProcessStep
   come componente a sé
 - ScrollHint variant="horizontal" con la stessa chiave sessionStorage condivisa
-  di 03/05
+  delle slide 02/03 (i tre caroselli del deck sono su 02, 03 e 05)
