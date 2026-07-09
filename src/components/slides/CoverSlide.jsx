@@ -24,7 +24,7 @@ function CoverSlide({ hintScroll }) {
         <div className="w-16 h-px bg-gold" />
 
         <p className="font-display font-medium italic text-cream text-[length:var(--text-quote-cover)] max-w-3xl">
-          Il tuo progetto merita un esecuzione all’altezza della tua firma.
+          Il tuo progetto merita un’esecuzione all’altezza della tua firma.
         </p>
 
         <p className="font-display italic text-cream/80 text-[length:var(--text-quote-coverh2)] max-w-[36ch]">

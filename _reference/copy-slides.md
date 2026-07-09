@@ -18,9 +18,7 @@ vedi STATO_PROGETTO_PRESENTAZIONE_E_MARKETING.md sezione 4).
 - Label sopra al logo: (rimossa — non esiste più, il logo è stato ingrandito)
 - Logo: images/rilievo-white.png
 - Wordmark sotto al logo: "Contract"
-- Citazione in corsivo: "Il tuo progetto merita un esecuzione all'altezza della tua firma."
-  ⚠ Refuso presente nel codice e sul sito live: "un esecuzione" dovrebbe essere
-  "un'esecuzione" (apostrofo mancante) — da correggere in CoverSlide.jsx.
+- Citazione in corsivo: "Il tuo progetto merita un'esecuzione all'altezza della tua firma."
 - Sottotitolo in corsivo (nuovo, solo su questo branch): "Al fianco degli studi
   di architettura, per trasformare ogni visione in un risultato concreto,
   elegante e fedele al progetto."
