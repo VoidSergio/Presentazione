@@ -6,6 +6,29 @@ implementazione verificata pezzo per pezzo.
 
 ---
 
+## Configurazione property/stream
+## Branch collaboratori — decisione tracciamento (2026-07-09)
+
+Il branch `collaboratori` (collaboratori.rilievocontract.it) riusa la stessa
+property/stream GA4 di `main` (G-5GDZR18LN8). Nessuna modifica al codice di
+tracciamento richiesta: Consent Mode v2, Silktide e i 7 eventi custom restano
+identici su entrambi i domini.
+
+Motivazione: basso volume previsto (42 contatti), evitare doppia manutenzione
+di consensi/eventi/conversioni, nessun bisogno di accessi GA4 separati per
+terzi al momento.
+
+Distinzione tra le due audience in reportistica: dimensione "Hostname"
+(presentazione.rilievocontract.it vs collaboratori.rilievocontract.it),
+combinata con il parametro ?ref= per il singolo contatto — stesso meccanismo
+già in uso su main.
+
+Silktide: nessuna configurazione aggiuntiva richiesta, lo script è iniettato
+via HTML/CDN e non ha whitelist di dominio lato pannello.
+
+Rivalutare split in property separata solo se il canale collaboratori scala
+oltre l'ordine di centinaia di contatti o richiede accessi GA4 dedicati a terzi.
+
 ## Decisioni prese
 
 1. **Si useranno i cookie** — banner di consenso necessario (GDPR/ePrivacy)
