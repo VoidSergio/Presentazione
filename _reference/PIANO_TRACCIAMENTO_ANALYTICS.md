@@ -66,6 +66,10 @@ oltre l'ordine di centinaia di contatti o richiede accessi GA4 dedicati a terzi.
 Automatici via GA4, nessun codice richiesto: `session_start`, `first_visit`,
 `page_view`, tempo di sessione, dispositivo, provenienza generale.
 
+Riferimento completo dei parametri custom (tipi, esempi, stato di
+registrazione come dimensione/metrica, limiti noti, esempi di Esplorazioni):
+vedi `GA4_PARAMETRI_TRACCIAMENTO.md`.
+
 ### Parametro `ref` (provenienza email)
 - Link nelle email: `https://presentazione.rilievocontract.it/?ref=CODICE`
 - Codice alfanumerico corto, senza significato apparente (es. `7f3a2`), non
