@@ -15,7 +15,9 @@ USO:
     python3 ga4_report_builder.py export.csv --contacts contatti.csv --out report.csv
 
 Il file --contacts, se fornito, deve avere almeno le colonne:
-    ref,studio
+    ref,studio      (oppure ref,nome — 'nome' viene accettato come alias
+                     di 'studio', cosi' si puo' usare direttamente la
+                     lista contatti gia' esistente senza rinominare nulla)
 (altre colonne extra come email, città, ecc. sono ignorate ma tollerate)
 """
 
@@ -28,6 +30,27 @@ import pandas as pd
 
 EXCLUDE_HOST_SUBSTRINGS = ["localhost", "netlify.app"]
 
+# Colonne che sono SEMPRE dimensioni (testo), mai metriche: non vanno mai
+# convertite in numeri, anche se qualche valore sembra numerico. Il caso
+# concreto: un ref come "53775" e' composto di sole cifre, ma resta un
+# codice, non un numero — convertirlo trasformerebbe gli altri ref
+# alfanumerici in valori mancanti, collassando contatti diversi.
+DIMENSION_COLUMN_SUBSTRINGS = [
+    "ref", "nome evento", "event name", "nome host", "hostname", "segmento", "segment",
+]
+
+# Valori GA4 che indicano "dimensione assente" (visite senza ?ref=):
+# non sono un contatto reale, vanno esclusi dal profilo per contatto.
+NOT_SET_VALUES = ["(not set)", "(non impostato)"]
+
+
+def _is_dimension_column(column_name: str) -> bool:
+    lowered = column_name.strip().lower()
+    for substring in DIMENSION_COLUMN_SUBSTRINGS:
+        if substring in lowered:
+            return True
+    return False
+
 
 def parse_ga4_export(path: str) -> pd.DataFrame:
     """Legge un export GA4 'Formato libero', gestendo:
@@ -37,7 +60,9 @@ def parse_ga4_export(path: str) -> pd.DataFrame:
     - riga 'Totale complessivo' da scartare
     Restituisce un DataFrame con colonne pulite.
     """
-    with open(path, newline="", encoding="utf-8") as f:
+    # utf-8-sig: gli export GA4 spesso hanno il BOM iniziale, che con
+    # "utf-8" semplice finirebbe dentro il nome della prima colonna.
+    with open(path, newline="", encoding="utf-8-sig") as f:
         raw_lines = [line for line in csv.reader(f)]
 
     # Rimuovi righe di commento (# ...) e righe completamente vuote
@@ -78,10 +103,18 @@ def parse_ga4_export(path: str) -> pd.DataFrame:
 
     df = pd.DataFrame(data_rows, columns=columns)
 
-    # Converte le colonne numeriche quando possibile (le metriche)
+    # Converte in numerica solo una colonna che (a) non e' una dimensione
+    # nota e (b) ha TUTTI i valori non vuoti convertibili. La vecchia
+    # regola "almeno un valore converte" corrompeva la colonna ref quando
+    # conteneva codici di sole cifre insieme a codici alfanumerici.
     for col in df.columns:
+        if _is_dimension_column(col):
+            continue
+        non_empty = df[col].astype(str).str.strip() != ""
+        if non_empty.sum() == 0:
+            continue
         converted = pd.to_numeric(df[col], errors="coerce")
-        if converted.notna().sum() > 0:
+        if converted[non_empty].notna().all():
             df[col] = converted.fillna(0)
 
     return df
@@ -102,10 +135,6 @@ def build_contact_profile(df: pd.DataFrame) -> pd.DataFrame:
     """Aggrega per ref: elenco eventi con conteggi, in colonne pivot."""
     ref_col = next((c for c in df.columns if c.strip().lower() == "ref"), None)
     event_col = next((c for c in df.columns if "nome evento" in c.lower()), None)
-    metric_cols = [
-        c for c in df.columns
-        if c not in (ref_col, event_col) and pd.api.types.is_numeric_dtype(df[c])
-    ]
 
     if not ref_col or not event_col:
         raise ValueError(
@@ -113,16 +142,50 @@ def build_contact_profile(df: pd.DataFrame) -> pd.DataFrame:
             "Verifica di aver incluso entrambe le dimensioni in Esplora."
         )
 
-    # Se ci sono più metriche numeriche (es. per via dei Confronti di
-    # segmenti), le sommiamo per avere un conteggio evento unico.
     df = df.copy()
+    df[ref_col] = df[ref_col].astype(str).str.strip()
+
+    # Escludi il traffico senza ref ("(not set)"): sono visite dirette o
+    # di test, non un contatto reale — nel report diventerebbero un finto
+    # contatto con i numeri di tutto il traffico organico messo insieme.
+    senza_ref = df[ref_col].str.lower().isin([v.lower() for v in NOT_SET_VALUES])
+    if senza_ref.sum() > 0:
+        print(f"Escluse {senza_ref.sum()} righe senza ref ('(not set)': traffico non da email).")
+        df = df[~senza_ref]
+
+    # Metrica: cerca per NOME le colonne "Conteggio eventi" (una sola, o
+    # una per segmento se hai usato i Confronti — in quel caso sommarle e'
+    # corretto perche' sono la stessa metrica ripetuta). Sommare invece
+    # QUALUNQUE colonna numerica mischierebbe metriche diverse (es.
+    # "Conteggio eventi" + "Utenti totali" = numero senza senso).
+    event_count_cols = [
+        c for c in df.columns
+        if "conteggio eventi" in c.lower() or "event count" in c.lower()
+    ]
+    if event_count_cols:
+        metric_cols = event_count_cols
+    else:
+        metric_cols = [
+            c for c in df.columns
+            if c not in (ref_col, event_col) and pd.api.types.is_numeric_dtype(df[c])
+        ]
+        if metric_cols:
+            print(
+                "Attenzione: nessuna colonna 'Conteggio eventi' trovata, uso la somma di: "
+                + ", ".join(metric_cols)
+                + " — verifica che siano davvero conteggi di eventi."
+            )
+
     df["_eventi"] = df[metric_cols].sum(axis=1) if metric_cols else 1
 
     pivot = df.pivot_table(
         index=ref_col, columns=event_col, values="_eventi", aggfunc="sum", fill_value=0
     )
 
-    pivot["slide_totali_viste"] = pivot.get("slide_view", 0)
+    # eventi_slide_view: numero di EVENTI slide_view (le rivisite contano),
+    # NON il numero di slide distinte viste — per quello serve l'export
+    # con la dimensione slide_name (vedi tutorial, sezione limiti).
+    pivot["eventi_slide_view"] = pivot.get("slide_view", 0)
     pivot["presentazione_completata"] = pivot.get("full_presentation_viewed", 0) > 0
     pivot["ha_cliccato_contatti"] = pivot.get("contact_click", 0) > 0
 
@@ -130,9 +193,24 @@ def build_contact_profile(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def merge_contacts(profile: pd.DataFrame, contacts_path: str) -> pd.DataFrame:
-    contacts = pd.read_csv(contacts_path, dtype=str)
+    contacts = pd.read_csv(contacts_path, dtype=str, encoding="utf-8-sig")
     if "ref" not in contacts.columns:
         raise ValueError("Il file contatti deve avere una colonna 'ref'.")
+
+    # 'nome' accettato come alias di 'studio': la lista contatti reale usa
+    # gia' quella colonna, inutile pretendere un file rinominato a mano.
+    if "studio" not in contacts.columns and "nome" in contacts.columns:
+        contacts = contacts.rename(columns={"nome": "studio"})
+
+    contacts["ref"] = contacts["ref"].astype(str).str.strip()
+
+    # Ref duplicati nel file contatti duplicherebbero silenziosamente le
+    # righe del report nel merge: tieni la prima occorrenza e avvisa.
+    duplicati = contacts["ref"].duplicated()
+    if duplicati.sum() > 0:
+        print(f"Attenzione: {duplicati.sum()} ref duplicati nel file contatti, tengo la prima occorrenza.")
+        contacts = contacts[~duplicati]
+
     merged = profile.merge(contacts, on="ref", how="left")
     # Porta 'studio' (se presente) come prima colonna leggibile
     if "studio" in merged.columns:
