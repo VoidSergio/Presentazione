@@ -27,8 +27,8 @@ from pathlib import Path
 
 DOMINIO_PRESENTAZIONE = "https://collaboratori.rilievocontract.it/?ref="
 
-# Il generatore sta nella root del progetto, questo script in tools/
-PERCORSO_GENERATORE_DEFAULT = Path(__file__).resolve().parent.parent / "generatore_email.html"
+# Il generatore sta nella root del progetto, questo script in tools/ga4-report/
+PERCORSO_GENERATORE_DEFAULT = Path(__file__).resolve().parent.parent.parent / "generatore_email.html"
 
 
 def leggi_contatti(percorso_csv):
