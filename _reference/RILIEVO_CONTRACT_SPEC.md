@@ -52,10 +52,11 @@ properties in `src/styles/typography.css` e richiamarle con arbitrary values:
 ```css
 :root {
   --text-h1-hero: clamp(40px, 6.4vw, 104px);   /* slide 07 contatti */
-  --text-h2-lg: clamp(34px, 4.4vw, 66px);       /* slide 02 chi siamo */
-  --text-h2-md: clamp(30px, 3.8vw, 56px);       /* slide 03, 06 */
+  --text-h2-lg: clamp(34px, 4.4vw, 66px);       /* slide 06 chi siamo */
+  --text-h2-md: clamp(30px, 3.8vw, 56px);       /* slide 03, 05 */
   --text-h2-clienti: clamp(30px, 4vw, 58px);    /* slide 04 */
-  --text-quote-cover: clamp(22px, 3vw, 44px);   /* slide 01 */
+  --text-quote-cover: clamp(34px, 3vw, 44px);   /* slide 01 — sul branch collaboratori il minimo è alzato da 22 a 34px */
+  --text-quote-coverh2: clamp(18px, 1.8vw, 23px); /* slide 01, sottotitolo cover (esiste solo sul branch collaboratori) */
   --text-quote-contatti: clamp(18px, 1.8vw, 28px); /* slide 07 */
 }
 ```
@@ -90,6 +91,7 @@ src/
       ProjectCard.jsx          # stile diretto, nessun bordo/box
       ProcessStep.jsx
       MobileCarousel.jsx      # wrapper riutilizzabile per griglia 4-up -> swipe mobile
+      LogoMarquee.jsx         # marquee loghi clienti su mobile (slide 04, variante "Vetrina", aggiunto dopo la stesura iniziale)
       ScrollHint.jsx          # hint verticale (cover) e orizzontale (carousel)
     slides/
       CoverSlide.jsx
@@ -137,11 +139,11 @@ Nota su `data/`: nel codice reale sono stati usati file separati per categoria
 migliore se in futuro il contenuto va riusato per altri output (es. post
 Instagram), perche' ogni categoria resta isolata e importabile a se'.
 
-**Incoerenza da correggere**: i dati dei servizi (slide 03, "Cosa facciamo")
-sono rimasti hardcoded dentro `ServicesSlide.jsx`, mai estratti in un
-`services.js` — unica slide su 5 senza un file dati proprio, rompendo la
-convenzione seguita da tutte le altre. Da allineare quando si ha occasione
-(vedi task di manutenzione).
+**Incoerenza risolta (commit a1563ad)**: i dati dei servizi (slide "Cosa
+facciamo") erano rimasti hardcoded dentro `ServicesSlide.jsx`; ora sono
+estratti in `data/services.js` come per tutte le altre slide. Le icone SVG
+restano JSX dentro `ServicesSlide.jsx` (non sono dati puri): nel file dati
+c'è una chiave stringa, la mappa chiave→SVG vive nel componente.
 
 ```js
 export const services = [ ... ];
@@ -180,9 +182,9 @@ automaticamente a griglia normale (`md:grid md:grid-cols-4 md:overflow-visible`)
 - Sparisce al primo scroll registrato dal container principale (`sessionStorage`, non serve persistere tra sessioni)
 
 **Orizzontale** (`ScrollHint variant="horizontal"`)
-- Visibile solo su slide 03 e 06, solo su viewport mobile
+- Visibile sulle slide con carosello — 02, 03 e 05 nell'ordine post-riordino — solo su viewport mobile
 - Icona doppia freccia sinistra/destra o testo piccolo "scorri le card"
-- Sparisce al primo `scrollLeft` registrato sul carosello di quella slide, non al primo scroll verticale della pagina
+- Sparisce al primo `scrollLeft` su uno QUALSIASI dei caroselli, non al primo scroll verticale della pagina: la chiave sessionStorage è condivisa tra le tre slide (il gesto da imparare è lo stesso, inutile ripetere l'hint)
 
 Entrambi gestiti dall'hook `useFirstInteraction.js`, che espone `hasInteracted`
 e un metodo `markInteracted()` da chiamare sul primo evento di scroll rilevante.

@@ -71,7 +71,10 @@ registrazione come dimensione/metrica, limiti noti, esempi di Esplorazioni):
 vedi `GA4_PARAMETRI_TRACCIAMENTO.md`.
 
 ### Parametro `ref` (provenienza email)
-- Link nelle email: `https://presentazione.rilievocontract.it/?ref=CODICE`
+- Link nelle email: `https://<dominio del branch>/?ref=CODICE` —
+  `presentazione.rilievocontract.it` per i clienti finali,
+  `collaboratori.rilievocontract.it` per gli studi partner (vedi sezione
+  "Branch collaboratori" in cima)
 - Codice alfanumerico corto, senza significato apparente (es. `7f3a2`), non
   il nome del cliente in chiaro
 - **La corrispondenza codice → destinatario reale va tenuta SOLO in un foglio
@@ -87,10 +90,14 @@ vedi `GA4_PARAMETRI_TRACCIAMENTO.md`.
 ### Ordine di caricamento script (index.html)
 1. `gtag.js` base — SEMPRE caricato, con **Consent Mode v2** impostato su
    `denied` di default per analytics/ads prima di qualunque interazione utente
-2. Script CookieYes — gestisce il banner, aggiorna il consenso via
-   `gtag('consent', 'update', {...})` quando l'utente sceglie
+2. Script Silktide Consent Manager — gestisce il banner, aggiorna il
+   consenso via `gtag('consent', 'update', {...})` quando l'utente sceglie.
+   (Nella prima stesura qui era indicato CookieYes: sostituito da Silktide
+   già in fase di decisione, vedi punto 2 delle decisioni sopra — questo è
+   ciò che è realmente installato in index.html)
 3. Script Microsoft Clarity — condizionato allo stesso consenso (categoria
-   analytics), non deve partire se l'utente rifiuta
+   analytics), non deve partire se l'utente rifiuta. NON ancora installato:
+   vedi "Rimandato a più avanti"
 
 ### Dove vive la logica nel codice React
 - `useSlideNavigation.js`: già rileva `slideAttiva` — aggiungere qui la

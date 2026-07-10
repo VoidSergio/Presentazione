@@ -1,6 +1,6 @@
 # Rilievo Contract — Stato del progetto (presentazione + email marketing)
 
-Ultimo aggiornamento: 08/07/2026. Documento di riferimento per riprendere il
+Ultimo aggiornamento: 10/07/2026. Documento di riferimento per riprendere il
 lavoro in qualunque sessione futura, senza dover ricostruire il contesto da zero.
 
 ---
@@ -91,6 +91,11 @@ dinamico, nessuna possibilità di tracciamento).
   pubblico e ricercabile
 - **Reversibilità**: l'intera configurazione è un solo record DNS — rimuoverla
   non tocca in alcun modo il sito principale rilievocontract.it, nessun rischio
+- **Secondo deploy (branch collaboratori)**: dal 09/07/2026 esiste
+  `collaboratori.rilievocontract.it` con la stessa identica architettura
+  (CNAME su Hostinger → progetto Netlify dedicato che pubblica il branch
+  `collaboratori`, SSL automatico) — pubblici e contenuti diversi, vedi
+  `BRANCH_E_TARGET.md`
 
 ---
 
@@ -148,9 +153,13 @@ nuovo modello**. Da quel momento è richiamabile in un click per ogni nuovo
 invio, senza ripetere il copia-incolla da file HTML.
 
 ### Immagini usate nell'email
-Ospitate sullo stesso dominio del sito (`presentazione.rilievocontract.it/images/`),
-non allegati né immagini incorporate — stesso principio di affidabilità del
-sito stesso.
+Ospitate sullo stesso dominio del sito, non allegati né immagini
+incorporate — stesso principio di affidabilità del sito stesso. Il
+template per i clienti finali le carica da
+`presentazione.rilievocontract.it/images/`; il template collaborazione
+(branch collaboratori), dal 10/07/2026, da
+`collaboratori.rilievocontract.it/images/` — stessi file, serviti dal
+deploy del rispettivo branch.
 
 ---
 
