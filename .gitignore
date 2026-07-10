@@ -16,6 +16,11 @@ dist-ssr
 # (vedi _reference/PIANO_TRACCIAMENTO_ANALYTICS.md, sezione "Parametro ref")
 generatore_email.html
 
+# Dati di lavoro GA4: export, mappatura contatti e report derivati — mai nel repo
+tools/ga4-report/*.csv
+contatti.csv
+report_per_contatto*.csv
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
