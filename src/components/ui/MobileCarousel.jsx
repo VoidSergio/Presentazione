@@ -4,7 +4,8 @@
 // numeroSlide: stesso valore letterale che il componente slide genitore
 // passa gia' a SlideLayout (es. "03") — non un secondo canale per sapere
 // "che slide e' questa", solo passato in giu' un livello in piu' per
-// l'evento carousel_swipe.
+// l'evento carousel_swipe, che lo converte in numero intero prima
+// dell'invio (vedi commento al punto di tracking).
 import { useEffect, useRef } from 'react';
 import { trackEvent } from '../../utils/analytics';
 
@@ -56,8 +57,11 @@ function MobileCarousel({ children, colonneDesktop, gap, onPrimoScrollOrizzontal
 
         if (indiceAssestato !== indiceCardRef.current) {
           indiceCardRef.current = indiceAssestato;
+          // slide_number sempre numero intero (3, non "03"): GA4 tratta
+          // "03" e 3 come due valori distinti della stessa dimensione, e
+          // slide_view/slide_time_spent inviano gia' numeri.
           trackEvent('carousel_swipe', {
-            slide_number: numeroSlide,
+            slide_number: Number(numeroSlide),
             card_index: indiceAssestato,
           });
         }
