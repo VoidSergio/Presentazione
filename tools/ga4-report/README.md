@@ -26,10 +26,10 @@ e openpyxl (`pip install pandas openpyxl`, su alcuni sistemi con
 4. Email inviate con link ?ref= personalizzati
         │
         ▼  [attesa] i destinatari visitano il sito, GA4 raccoglie gli eventi
-5. Export CSV da GA4 Esplora  (Formato libero, dimensioni ref + Nome evento)
+5. Export CSV da GA4 Esplora  (scheda "Profilo per contatto")
         │
         ▼  python ga4_report_builder.py export.csv --contacts lista.csv
-6. report_per_contatto.xlsx   (foglio Riepilogo leggibile + foglio Dettaglio eventi)
+6. report_per_contatto.xlsx   (Riepilogo + Dettaglio eventi + Traffico anonimo)
 ```
 
 I passi 1-2 servono solo quando la lista contatti cambia (nuovi studi).
@@ -112,11 +112,16 @@ successo: il generatore era rimasto a 23 contatti su 42).
 
 ## 3. ga4_report_builder.py — dal export GA4 al report per contatto
 
-**Cosa fa**: legge un export CSV di GA4 Esplora (Formato libero) e
-produce un file Excel a due fogli: **Riepilogo** (una riga per contatto,
-solo le 3 domande che contano — ha visto tutto? ha cliccato un contatto?
-quante slide? — leggibile da chiunque) e **Dettaglio eventi** (stesso
-profilo con il conteggio di ogni singolo evento, custom e automatico).
+**Cosa fa**: legge un export CSV della scheda GA4 Esplora "Profilo per
+contatto" (Formato libero) e produce un file Excel a **tre fogli**:
+
+- **Riepilogo** — una riga per ogni contatto identificabile (ha un ref
+  proprio, con o senza nome studio abbinato), leggibile da chiunque
+- **Dettaglio eventi** — stesso profilo, conteggio per singolo evento
+- **Traffico anonimo** — eventi senza ref, aggregati per tipo di evento
+  (non per persona: non e' possibile distinguere visitatori diversi
+  che condividono la stessa assenza di ref)
+
 Con `--contacts` abbina il nome dello studio a ogni ref.
 
 **Quando**: dopo gli invii, ogni volta che serve un report aggiornato.
@@ -128,37 +133,68 @@ python ga4_report_builder.py export.csv --contacts lista_ref_completa_42.csv
 python ga4_report_builder.py export.csv --contacts lista_ref_completa_42.csv --out report_ottobre.xlsx
 ```
 
+### Struttura attesa dell'export (scheda "Profilo per contatto")
+
+Ogni dimensione e metrica viene riconosciuta **per nome esatto della
+colonna, mai per posizione** — l'ordine con cui GA4 le mette nel CSV non
+conta (verificato con test dedicato: stesso contenuto, colonne in ordine
+diverso, stesso report). Le dimensioni/metriche **opzionali** mancanti
+non fanno fallire lo script: la funzionalità collegata viene omessa dal
+report con un messaggio a video.
+
+| Colonna | Tipo | Obbligatoria? | Se manca dall'export |
+|---|---|---|---|
+| `ref` | Dimensione | **Sì** | Errore bloccante — impossibile costruire un profilo per contatto |
+| `Nome evento` | Dimensione | **Sì** | Errore bloccante |
+| `Conteggio eventi` | Metrica | **Sì** | Errore bloccante (non fa fallback ad altre metriche a caso) |
+| `Nome host` | Dimensione | No | Nessun filtro su localhost/netlify.app, nessuna colonna "Nome host" nel foglio Traffico anonimo |
+| `Categoria del dispositivo` | Dimensione | No | Colonna "Dispositivo prevalente" omessa dal Riepilogo |
+| `slide_number` | Dimensione | No | Colonna "Ultima slide raggiunta" omessa dal Riepilogo |
+| `type` | Dimensione | No | Colonna "Canale di contatto cliccato" omessa dal Riepilogo |
+| `seconds_spent` | Metrica | No | Colonna "Tempo totale sul sito" omessa dal Riepilogo |
+
+**Valori `(not set)` su una dimensione**: significano "informazione
+assente per quella riga" (tipicamente un evento raccolto prima che la
+dimensione venisse creata in GA4), mai un valore categorico vero — non
+compaiono mai nel report come se fossero un dato reale (es. un `type`
+`(not set)` non conta come canale di contatto cliccato).
+
+**Confronti di segmenti**: la scheda puo' avere zero, uno o piu' gruppi
+segmentati nell'intestazione (riga "Segmento"). Se compare un gruppo il
+cui nome contiene "total*" (es. "Totali"), viene escluso dalla somma
+delle metriche: nell'export reale duplica esattamente gli stessi numeri
+del segmento applicato, sommarlo raddoppierebbe ogni conteggio.
+
+### Le colonne del Riepilogo
+
+| Colonna | Significato |
+|---|---|
+| Studio | Nome dal file `--contacts`, o l'etichetta "Ref presente ma non in lista contatti" se il ref non vi compare (non e' rumore da scartare: e' un contatto reale senza nome abbinato, es. una verifica manuale come `check-views`) |
+| Ref | Il codice tracciamento |
+| Presentazione completata | Sì/No — almeno un evento `full_presentation_viewed` |
+| Ha cliccato un contatto | Sì/No — almeno un evento `contact_click` |
+| Canale di contatto cliccato | Telefono/Email (tradotto), o entrambi se cliccati in momenti diversi — vuoto se `type` non e' nell'export o mai valorizzato |
+| Slide viste (eventi) | Conteggio eventi `slide_view` (le rivisite contano) |
+| Ultima slide raggiunta | Nome della slide piu' alta raggiunta (`slide_number` massimo, tradotto: 1=Cover … 7=Contatti) |
+| Dispositivo prevalente | Moda di `Categoria del dispositivo` per quel ref |
+| Tempo totale sul sito (secondi) | Somma di `seconds_spent` per quel ref |
+
 **Input**:
-- `export.csv`: da GA4 → Esplora → scheda con dimensioni `ref` e
-  `Nome evento` e metrica `Conteggio eventi` → icona download.
-  Solo formato "Formato libero" (non report standard né canalizzazioni)
+- `export.csv`: da GA4 → Esplora → scheda "Profilo per contatto" →
+  icona download. Solo formato "Formato libero" (non report standard
+  né canalizzazioni)
 - `--contacts` (facoltativo): CSV con colonne `ref` e `studio` — oppure
   `nome`, accettato come alias: la lista ufficiale va bene così com'è
 
-**Output**: `report_per_contatto.xlsx` (default) o, con `--out file.csv`,
-un CSV piatto col solo foglio Riepilogo (nessun dettaglio per evento —
-per quello serve `.xlsx`). Righe ordinate alfabeticamente per studio.
-Un ref presente nell'export ma assente dalla lista contatti (tipicamente
-un codice di test/debug usato per verificare il tracciamento, es.
-`test999`) non viene scartato né lasciato vuoto: riceve l'etichetta
-"Ref non trovato in lista contatti" così resta visibile e distinguibile
-da uno studio vero, invece di sparire o confondersi con un dato mancante.
+**Output**: `report_per_contatto.xlsx` (default, 3 fogli) o, con
+`--out file.csv`, un CSV piatto col solo Riepilogo. Righe ordinate
+alfabeticamente per studio.
 
-**Esclude automaticamente**: traffico `localhost`/`*.netlify.app`, righe
-"Totale complessivo", e il traffico senza `ref` — che nello stesso export
-GA4 può comparire in DUE forme diverse per lo stesso identico significato
-(visita diretta, non da un link email): il testo letterale `(not set)`
-**oppure** la cella semplicemente vuota. Lo script esclude entrambe (fix
-del 10/07/2026: prima veniva riconosciuto solo il testo letterale, e le
-righe con cella vuota finivano in un finto "contatto" con ref vuoto nel
-report). Se nell'export ci sono metriche oltre a `Conteggio eventi` (es.
-"Utenti totali") vengono ignorate, non sommate per sbaglio.
-
-**Attenzione a `Slide viste (eventi)`**: conta gli EVENTI slide_view (le
-rivisite contano), non le slide distinte viste. Per il dettaglio per
-slide serve l'estensione con `slide_name` (prevista: secondo output in
-formato lungo `ref, slide_name, viste` + colonne `slide_distinte_viste`
-e `max_slide_raggiunta`).
+**Esclude automaticamente**: traffico `localhost`/`*.netlify.app` (se
+`Nome host` e' nell'export), riga "Totale complessivo". Il traffico
+senza `ref` — che puo' comparire sia come testo letterale `(not set)`
+sia come cella vuota, stesso identico significato — non viene scartato:
+finisce nel foglio "Traffico anonimo", aggregato per evento.
 
 **Requisito aggiuntivo per questo script**: `pip install openpyxl` oltre
 a pandas (serve per scrivere il file `.xlsx` formattato).
@@ -206,3 +242,26 @@ contengono nessun dato — lavorano su file che restano fuori.
   vuoti. Messaggi d'errore per export malformati ripuliti (niente più
   traceback Python a schermo). Aggiunta protezione `.gitignore` per CSV/
   XLSX lasciati per sbaglio nella root del progetto.
+- 13/07/2026 (consolidamento sulla scheda "Profilo per contatto —
+  Produzione") — aggiunte le dimensioni `Categoria del dispositivo`,
+  `slide_number`, `type` e la metrica `seconds_spent`, tutte opzionali
+  (nessuna fa fallire lo script se assente). Nuove colonne derivate nel
+  Riepilogo: Canale di contatto cliccato, Ultima slide raggiunta,
+  Dispositivo prevalente, Tempo totale sul sito. Nuovo foglio "Traffico
+  anonimo": il traffico senza ref non viene piu' scartato, solo isolato
+  dal profilo per contatto (non essendo riconducibile a una persona) e
+  aggregato per evento. Semplificata la classificazione a 3 casi (in
+  lista → nome studio; ref presente ma non in lista → etichetta, resta
+  un dato valido; ref assente → foglio anonimo) dato che il traffico
+  Test/Debug e' ormai escluso a monte in GA4. Corretto un bug di parsing:
+  la didascalia letterale "Segmento" nella riga di intestazione dei
+  segmenti veniva trattata come se fosse un nome di segmento vero,
+  rinominando la dimensione adiacente (es. "type" → "Segmento — type") e
+  rompendone il riconoscimento per nome esatto. Corretto un secondo bug:
+  un gruppo di colonne segmentato chiamato "Totali" duplica esattamente i
+  numeri del segmento applicato nell'export reale — sommarlo avrebbe
+  raddoppiato ogni conteggio; ora viene riconosciuto per nome ed escluso
+  dalla somma. Verificata esplicitamente l'indipendenza dall'ordine delle
+  colonne nel CSV (stesso contenuto, ordine mescolato, stesso risultato)
+  e la tenuta con ciascuna colonna opzionale rimossa singolarmente,
+  contro export sia reali sia sintetici.
