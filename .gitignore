@@ -18,8 +18,18 @@ generatore_email.html
 
 # Dati di lavoro GA4: export, mappatura contatti e report derivati — mai nel repo
 tools/ga4-report/*.csv
+tools/ga4-report/*.xlsx
 contatti.csv
 report_per_contatto*.csv
+report_per_contatto*.xlsx
+# Stessi file, ma se lo script viene lanciato dalla root del progetto
+# invece che da tools/ga4-report/ (es. "python tools/ga4-report/... export.csv"
+# con export.csv/--out nella cartella corrente): nessun CSV/XLSX sorgente
+# di questo repo (React/Vite) vive legittimamente in root, quindi e' sicuro
+# escluderli tutti qui — evita che export o report finiscano committati per
+# errore (successo con download.csv/prova.csv, vedi commit di correzione).
+/*.csv
+/*.xlsx
 
 # Editor directories and files
 .vscode/*
