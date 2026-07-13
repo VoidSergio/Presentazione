@@ -118,9 +118,13 @@ contatto" (Formato libero) e produce un file Excel a **tre fogli**:
 - **Riepilogo** — una riga per ogni contatto identificabile (ha un ref
   proprio, con o senza nome studio abbinato), leggibile da chiunque
 - **Dettaglio eventi** — stesso profilo, conteggio per singolo evento
-- **Traffico anonimo** — eventi senza ref, aggregati per tipo di evento
-  (non per persona: non e' possibile distinguere visitatori diversi
-  che condividono la stessa assenza di ref)
+- **Traffico anonimo** — eventi senza ref, in tabella **Nome evento x
+  Categoria del dispositivo** (righe = evento, colonne = Desktop/Mobile/
+  Tablet + Totale — non per persona: non e' possibile distinguere
+  visitatori diversi che condividono la stessa assenza di ref). Se ci
+  sono `contact_click` anonimi con `type` valorizzato, sotto la tabella
+  compare anche una sezione **"Canale di contatto (traffico anonimo)"**
+  con il conteggio per Telefono/Email — assente se non ce ne sono
 
 Con `--contacts` abbina il nome dello studio a ogni ref.
 
@@ -147,10 +151,10 @@ report con un messaggio a video.
 | `ref` | Dimensione | **Sì** | Errore bloccante — impossibile costruire un profilo per contatto |
 | `Nome evento` | Dimensione | **Sì** | Errore bloccante |
 | `Conteggio eventi` | Metrica | **Sì** | Errore bloccante (non fa fallback ad altre metriche a caso) |
-| `Nome host` | Dimensione | No | Nessun filtro su localhost/netlify.app, nessuna colonna "Nome host" nel foglio Traffico anonimo |
-| `Categoria del dispositivo` | Dimensione | No | Colonna "Dispositivo prevalente" omessa dal Riepilogo |
+| `Nome host` | Dimensione | No | Nessun filtro su localhost/netlify.app (nessun'altra colonna interessata: il foglio Traffico anonimo non ha mai avuto una colonna Nome host propria) |
+| `Categoria del dispositivo` | Dimensione | No | Colonna "Dispositivo prevalente" omessa dal Riepilogo; il foglio Traffico anonimo mostra solo il totale per evento, senza suddivisione per dispositivo |
 | `slide_number` | Dimensione | No | Colonna "Ultima slide raggiunta" omessa dal Riepilogo |
-| `type` | Dimensione | No | Colonna "Canale di contatto cliccato" omessa dal Riepilogo |
+| `type` | Dimensione | No | Colonna "Canale di contatto cliccato" omessa dal Riepilogo; sezione "Canale di contatto (traffico anonimo)" assente dal foglio Traffico anonimo |
 | `seconds_spent` | Metrica | No | Colonna "Tempo totale sul sito" omessa dal Riepilogo |
 
 **Valori `(not set)` su una dimensione**: significano "informazione
@@ -265,3 +269,19 @@ contengono nessun dato — lavorano su file che restano fuori.
   colonne nel CSV (stesso contenuto, ordine mescolato, stesso risultato)
   e la tenuta con ciascuna colonna opzionale rimossa singolarmente,
   contro export sia reali sia sintetici.
+- 13/07/2026 (seconda passata, foglio Traffico anonimo) — l'aggregazione
+  per solo Nome evento e' diventata una tabella incrociata Nome evento x
+  Categoria del dispositivo (con colonna Totale), piu' leggibile e
+  informativa; se il dispositivo manca dall'export, torna al totale
+  semplice invece di far fallire il foglio. Aggiunta la sezione separata
+  "Canale di contatto (traffico anonimo)" per i contact_click anonimi con
+  `type` valorizzato (stessa traduzione Telefono/Email del Riepilogo),
+  assente quando non ce ne sono — non forza mai uno zero finto. La
+  formattazione (grassetto/sfondo intestazione) e l'allargamento colonne
+  sono stati separati in due funzioni distinte: un foglio puo' ora
+  contenere piu' di una tabella una sotto l'altra senza che la seconda
+  intestazione restringa le colonne gia' dimensionate per la prima.
+  Testato sul download.csv reale (14 eventi × Desktop/Mobile, totali
+  identici alla versione precedente per evento) e con un export sintetico
+  dedicato per la sezione canale (Telefono=4, Email=2, `(not set)`
+  correttamente escluso dal conteggio).
