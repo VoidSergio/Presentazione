@@ -55,6 +55,35 @@
       --iconBackgroundColor: #FFFFFF;
     }
   </style>
+
+  <!-- Override CSS NON UFFICIALE, non fa parte dell'API pubblica di
+       Silktide: riduce il pulsante persistente (icona sempre visibile
+       dopo la prima scelta di consenso, per riaprire le preferenze) e ne
+       sostituisce la grafica a forma di biscotto con una freccia in su.
+       Area cliccabile reale 36x36px, sopra il minimo di 32x32 richiesto
+       per l'accessibilita' touch, anche se visivamente compatta.
+       Selettore verificato contro silktide-consent-manager.css v2.0.1
+       (regola "#stcm-icon") il 13/07/2026 — se in futuro si aggiorna la
+       versione della libreria, verificare che "#stcm-icon" esista ancora
+       con la stessa struttura prima del deploy: un cambio di markup a
+       monte farebbe silenziosamente tornare il pulsante alla grafica e
+       dimensione originali della libreria (non blocca nulla, il pulsante
+       resta funzionante, solo non più nella forma personalizzata qui). -->
+  <style id="silktide-icon-override-non-ufficiale">
+    #stcm-icon {
+      width: 36px;
+      height: 36px;
+    }
+    #stcm-icon svg {
+      display: none;
+    }
+    #stcm-icon::after {
+      content: "↑";
+      color: var(--iconBackgroundColor);
+      font-size: 18px;
+      line-height: 1;
+    }
+  </style>
   <script src="https://cdn.jsdelivr.net/gh/silktide/consent-manager@v2.0.1/silktide-consent-manager.js" integrity="sha384-5Pt34uiIbCsvfiiZXoLi4HRf/YBXjr9c8e+gYeVo9smUaInNHYVtc8NZ8wUnXJIq" crossorigin="anonymous"></script>
   <script>
     window.silktideConsentManager.init({
