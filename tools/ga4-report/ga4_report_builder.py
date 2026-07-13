@@ -36,7 +36,12 @@ OUTPUT:
     --out con estensione .xlsx (default) -> tre fogli:
         "Riepilogo"        — una riga per contatto identificabile
         "Dettaglio eventi"  — stesso profilo, conteggio per singolo evento
-        "Traffico anonimo"  — eventi senza ref, aggregati (non per persona)
+        "Traffico anonimo"  — eventi senza ref, tabella Nome evento x
+                              Categoria del dispositivo (non per persona),
+                              piu' un'eventuale sezione separata col
+                              conteggio contact_click per canale
+                              (Telefono/Email) se la dimensione 'type' e'
+                              nell'export e ci sono click con canale noto
     --out con estensione .csv -> solo il foglio Riepilogo, in CSV piatto
 """
 
@@ -84,6 +89,11 @@ NOMI_SLIDE_PER_NUMERO = {
 TRADUZIONE_CANALE_CONTATTO = {"phone": "Telefono", "email": "Email"}
 
 ETICHETTA_REF_NON_TROVATO = "Ref presente ma non in lista contatti (verificare)"
+
+# Ordine di lettura preferito per le colonne dispositivo nel foglio
+# Traffico anonimo: le categorie note prima (ordine fisso), eventuali
+# altre categorie non previste dopo (alfabetico), "Totale" sempre ultima.
+ORDINE_DISPOSITIVI_NOTI = ["Desktop", "Mobile", "Tablet"]
 
 
 def _is_dimension_column(column_name: str) -> bool:
@@ -408,31 +418,83 @@ def _aggiungi_tempo_totale(profile, df_con_ref, ref_col):
     return profile.merge(totale_per_ref.rename("tempo_totale_sul_sito"), left_on="ref", right_index=True, how="left")
 
 
-def costruisci_traffico_anonimo(df_anonimo: pd.DataFrame, event_col: str) -> pd.DataFrame:
-    """Aggrega il traffico senza ref per evento (e per host, se la
-    dimensione e' presente): non una riga per persona (impossibile,
-    potrebbero essere piu' visitatori diversi), solo il totale."""
+def _ordina_colonne_dispositivo(colonne) -> list:
+    note = [c for c in ORDINE_DISPOSITIVI_NOTI if c in colonne]
+    altre = sorted(c for c in colonne if c not in ORDINE_DISPOSITIVI_NOTI and c != "Totale")
+    ordine = note + altre
+    if "Totale" in colonne:
+        ordine.append("Totale")
+    return ordine
+
+
+def costruisci_traffico_anonimo(df_anonimo: pd.DataFrame, event_col: str):
+    """Aggrega il traffico senza ref in una tabella Nome evento x
+    Categoria del dispositivo (righe = evento, colonne = dispositivo, piu'
+    una colonna Totale): non una riga per persona, impossibile — potrebbero
+    essere piu' visitatori diversi dietro lo stesso ref vuoto/(not set).
+    Se la dimensione dispositivo non e' nell'export, torna a un semplice
+    totale per evento. Restituisce anche, se disponibile, una seconda
+    tabella col conteggio di contact_click per canale (phone/email) tra il
+    traffico anonimo — None se la dimensione 'type' manca o non ci sono
+    contact_click con canale valorizzato in questo export."""
     if df_anonimo.empty:
-        return pd.DataFrame(columns=["Nome evento", "Eventi"])
+        return pd.DataFrame(columns=["Nome evento", "Eventi"]), None
 
-    host_col = next((c for c in df_anonimo.columns if "nome host" in c.lower()), None)
     metric_cols = _trova_colonne_metrica(df_anonimo, "conteggio eventi", "event count")
-
     df_anonimo = df_anonimo.copy()
     df_anonimo["_eventi"] = df_anonimo[metric_cols].sum(axis=1) if metric_cols else 1
 
-    colonne_raggruppamento = [event_col]
-    if host_col:
-        colonne_raggruppamento.append(host_col)
+    device_col = _trova_colonna_esatta(df_anonimo, "Categoria del dispositivo")
+    if device_col is not None:
+        dispositivo_pulito = _pulisci_non_impostato(df_anonimo[device_col])
+        dispositivo_pulito = dispositivo_pulito.map(
+            lambda v: v.capitalize() if isinstance(v, str) else v
+        ).fillna("Non specificato")
 
-    aggregato = df_anonimo.groupby(colonne_raggruppamento)["_eventi"].sum().reset_index()
-    rinomina = {event_col: "Nome evento", "_eventi": "Eventi"}
-    if host_col:
-        rinomina[host_col] = "Nome host"
-    aggregato = aggregato.rename(columns=rinomina)
+        pivot = df_anonimo.pivot_table(
+            index=df_anonimo[event_col], columns=dispositivo_pulito,
+            values="_eventi", aggfunc="sum", fill_value=0,
+        )
+        pivot["Totale"] = pivot.sum(axis=1)
+        pivot = pivot[_ordina_colonne_dispositivo(pivot.columns)]
+        tabella_eventi = pivot.reset_index().rename(columns={event_col: "Nome evento"})
+    else:
+        print(
+            "Attenzione: dimensione 'Categoria del dispositivo' non presente nell'export — "
+            "'Traffico anonimo' mostra solo il totale per evento, senza suddivisione per dispositivo."
+        )
+        aggregato = df_anonimo.groupby(event_col)["_eventi"].sum().reset_index()
+        tabella_eventi = aggregato.rename(columns={event_col: "Nome evento", "_eventi": "Eventi"})
 
-    colonna_ordinamento = ["Nome host", "Nome evento"] if host_col else ["Nome evento"]
-    return aggregato.sort_values(colonna_ordinamento, kind="stable").reset_index(drop=True)
+    tabella_eventi = tabella_eventi.sort_values("Nome evento", kind="stable").reset_index(drop=True)
+    tabella_canale = _costruisci_canale_anonimo(df_anonimo, event_col)
+    return tabella_eventi, tabella_canale
+
+
+def _costruisci_canale_anonimo(df_anonimo: pd.DataFrame, event_col: str):
+    """Conteggio contact_click per canale (Telefono/Email) tra il
+    traffico senza ref, stessa traduzione del foglio Riepilogo. None se la
+    dimensione 'type' non e' nell'export o non ci sono contact_click con
+    canale valorizzato — la sezione resta assente, non forza uno zero."""
+    colonna_type = _trova_colonna_esatta(df_anonimo, "type")
+    if colonna_type is None:
+        return None
+
+    tipo_pulito = _pulisci_non_impostato(df_anonimo[colonna_type])
+    maschera_click = df_anonimo[event_col] == "contact_click"
+
+    sotto_insieme = df_anonimo.loc[maschera_click].copy()
+    sotto_insieme["_canale"] = tipo_pulito[maschera_click]
+    sotto_insieme = sotto_insieme.dropna(subset=["_canale"])
+    if sotto_insieme.empty:
+        return None
+
+    aggregato = sotto_insieme.groupby("_canale")["_eventi"].sum()
+    righe = [
+        {"Canale": TRADUZIONE_CANALE_CONTATTO.get(canale, canale), "Eventi": int(conteggio)}
+        for canale, conteggio in aggregato.items()
+    ]
+    return pd.DataFrame(righe).sort_values("Canale", kind="stable").reset_index(drop=True)
 
 
 def merge_contacts(profile: pd.DataFrame, contacts_path: str) -> pd.DataFrame:
@@ -532,11 +594,11 @@ def costruisci_dettaglio(profile: pd.DataFrame) -> pd.DataFrame:
     return dettaglio, len(eventi_custom_presenti)
 
 
-def scrivi_xlsx(riepilogo, dettaglio, numero_eventi_custom, traffico_anonimo, percorso_output, righe_anonime):
+def scrivi_xlsx(riepilogo, dettaglio, numero_eventi_custom, tabella_eventi_anonimi, tabella_canale_anonimo, percorso_output, righe_anonime):
     with pd.ExcelWriter(percorso_output, engine="openpyxl") as writer:
         riepilogo.to_excel(writer, sheet_name="Riepilogo", index=False, startrow=1)
         dettaglio.to_excel(writer, sheet_name="Dettaglio eventi", index=False, startrow=1)
-        traffico_anonimo.to_excel(writer, sheet_name="Traffico anonimo", index=False, startrow=1)
+        tabella_eventi_anonimi.to_excel(writer, sheet_name="Traffico anonimo", index=False, startrow=1)
 
         foglio_riepilogo = writer.sheets["Riepilogo"]
         foglio_riepilogo["A1"] = (
@@ -544,7 +606,8 @@ def scrivi_xlsx(riepilogo, dettaglio, numero_eventi_custom, traffico_anonimo, pe
             "a un nome studio). Il traffico senza ref è nel foglio 'Traffico anonimo'."
         )
         foglio_riepilogo["A1"].font = Font(italic=True, color="55524A")
-        _formatta_intestazione_su_riga(foglio_riepilogo, riga_intestazione=2)
+        _stila_intestazione(foglio_riepilogo, riga_intestazione=2, con_freeze=True)
+        _autofit_colonne(foglio_riepilogo)
 
         foglio_dettaglio = writer.sheets["Dettaglio eventi"]
         foglio_dettaglio["A1"] = (
@@ -552,18 +615,37 @@ def scrivi_xlsx(riepilogo, dettaglio, numero_eventi_custom, traffico_anonimo, pe
             "colonne chiare = eventi automatici di GA4 (page_view, scroll, ecc.)."
         )
         foglio_dettaglio["A1"].font = Font(italic=True, color="55524A")
-        _formatta_intestazione_su_riga(foglio_dettaglio, riga_intestazione=2, numero_colonne_evidenziate=numero_eventi_custom)
+        _stila_intestazione(foglio_dettaglio, riga_intestazione=2, numero_colonne_evidenziate=numero_eventi_custom, con_freeze=True)
+        _autofit_colonne(foglio_dettaglio)
 
         foglio_anonimo = writer.sheets["Traffico anonimo"]
         foglio_anonimo["A1"] = (
-            f"{righe_anonime} righe dell'export senza ref ('(not set)' o cella vuota), aggregate per evento: "
-            "traffico reale (visite dirette, non da un link email), non riconducibile a un singolo contatto."
+            f"{righe_anonime} righe dell'export senza ref ('(not set)' o cella vuota), aggregate per evento e "
+            "dispositivo: traffico reale (visite dirette, non da un link email), non riconducibile a un singolo contatto."
         )
         foglio_anonimo["A1"].font = Font(italic=True, color="55524A")
-        _formatta_intestazione_su_riga(foglio_anonimo, riga_intestazione=2)
+        _stila_intestazione(foglio_anonimo, riga_intestazione=2, con_freeze=True)
+
+        if tabella_canale_anonimo is not None and not tabella_canale_anonimo.empty:
+            riga_titolo = len(tabella_eventi_anonimi) + 4  # +2 note/intestazione, +1 dato, +1 riga vuota di distacco
+            cella_titolo = foglio_anonimo.cell(row=riga_titolo, column=1, value="Canale di contatto (traffico anonimo)")
+            cella_titolo.font = Font(bold=True, italic=True, color="1C1C1A")
+            riga_intestazione_canale = riga_titolo + 1
+            tabella_canale_anonimo.to_excel(
+                writer, sheet_name="Traffico anonimo", index=False, startrow=riga_intestazione_canale - 1
+            )
+            _stila_intestazione(foglio_anonimo, riga_intestazione=riga_intestazione_canale)
+
+        _autofit_colonne(foglio_anonimo)
 
 
-def _formatta_intestazione_su_riga(worksheet, riga_intestazione, numero_colonne_evidenziate=0):
+def _stila_intestazione(worksheet, riga_intestazione, numero_colonne_evidenziate=0, con_freeze=False):
+    """Applica grassetto/sfondo/allineamento alla riga di intestazione
+    indicata. Non tocca la larghezza delle colonne (vedi _autofit_colonne,
+    chiamata una sola volta a fine foglio): un foglio puo' contenere piu'
+    di una tabella una sotto l'altra (es. Traffico anonimo), e ricalcolare
+    la larghezza a ogni intestazione rischierebbe di restringere colonne
+    gia' dimensionate per la tabella precedente nello stesso foglio."""
     intestazione_font = Font(bold=True, color="FFFFFF")
     intestazione_sfondo = PatternFill(start_color="1C1C1A", end_color="1C1C1A", fill_type="solid")
     intestazione_sfondo_automatici = PatternFill(start_color="8A8680", end_color="8A8680", fill_type="solid")
@@ -572,6 +654,8 @@ def _formatta_intestazione_su_riga(worksheet, riga_intestazione, numero_colonne_
 
     for indice_colonna in range(1, worksheet.max_column + 1):
         cella = worksheet.cell(row=riga_intestazione, column=indice_colonna)
+        if cella.value is None:
+            continue  # cella vuota di un'altra tabella nella stessa riga di intestazione, non stilizzarla
         cella.font = intestazione_font
         if numero_colonne_evidenziate > 0 and indice_colonna > colonne_iniziali + numero_colonne_evidenziate:
             cella.fill = intestazione_sfondo_automatici
@@ -579,11 +663,17 @@ def _formatta_intestazione_su_riga(worksheet, riga_intestazione, numero_colonne_
             cella.fill = intestazione_sfondo
         cella.alignment = Alignment(horizontal="center", vertical="center")
 
-    worksheet.freeze_panes = f"A{riga_intestazione + 1}"
+    if con_freeze:
+        worksheet.freeze_panes = f"A{riga_intestazione + 1}"
 
+
+def _autofit_colonne(worksheet):
+    """Allarga ogni colonna in base al contenuto piu' lungo presente in
+    TUTTO il foglio (tutte le tabelle che contiene), chiamata una sola
+    volta a foglio completato."""
     for indice_colonna in range(1, worksheet.max_column + 1):
         lunghezza_massima = 0
-        for riga in worksheet.iter_rows(min_col=indice_colonna, max_col=indice_colonna, min_row=riga_intestazione):
+        for riga in worksheet.iter_rows(min_col=indice_colonna, max_col=indice_colonna):
             for cella in riga:
                 if cella.value is not None:
                     lunghezza_massima = max(lunghezza_massima, len(str(cella.value)))
@@ -615,11 +705,14 @@ def main():
 
     riepilogo = costruisci_riepilogo(profile)
     dettaglio, numero_eventi_custom = costruisci_dettaglio(profile)
-    traffico_anonimo = costruisci_traffico_anonimo(df_anonimo, event_col)
+    tabella_eventi_anonimi, tabella_canale_anonimo = costruisci_traffico_anonimo(df_anonimo, event_col)
 
     estensione = Path(args.out).suffix.lower()
     if estensione == ".xlsx":
-        scrivi_xlsx(riepilogo, dettaglio, numero_eventi_custom, traffico_anonimo, args.out, len(df_anonimo))
+        scrivi_xlsx(
+            riepilogo, dettaglio, numero_eventi_custom,
+            tabella_eventi_anonimi, tabella_canale_anonimo, args.out, len(df_anonimo),
+        )
     else:
         riepilogo.to_csv(args.out, index=False, encoding="utf-8")
         print("Nota: il .csv contiene solo il Riepilogo. Per il dettaglio e il traffico anonimo usa --out report.xlsx.")
