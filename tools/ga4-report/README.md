@@ -6,7 +6,8 @@ studio. Questa cartella è anche la cartella di lavoro per i CSV: il
 `.gitignore` del repo esclude qualunque `*.csv` qui dentro.
 
 Requisito comune: Python 3. Solo `ga4_report_builder.py` richiede pandas
-(`pip install pandas`, su alcuni sistemi con `--break-system-packages`).
+e openpyxl (`pip install pandas openpyxl`, su alcuni sistemi con
+`--break-system-packages`).
 
 ---
 
@@ -28,7 +29,7 @@ Requisito comune: Python 3. Solo `ga4_report_builder.py` richiede pandas
 5. Export CSV da GA4 Esplora  (Formato libero, dimensioni ref + Nome evento)
         │
         ▼  python ga4_report_builder.py export.csv --contacts lista.csv
-6. report_per_contatto.csv    (una riga per studio: eventi, completamento, click)
+6. report_per_contatto.xlsx   (foglio Riepilogo leggibile + foglio Dettaglio eventi)
 ```
 
 I passi 1-2 servono solo quando la lista contatti cambia (nuovi studi).
@@ -112,16 +113,19 @@ successo: il generatore era rimasto a 23 contatti su 42).
 ## 3. ga4_report_builder.py — dal export GA4 al report per contatto
 
 **Cosa fa**: legge un export CSV di GA4 Esplora (Formato libero) e
-produce un profilo per ogni ref: colonne per ogni evento, più
-`eventi_slide_view`, `presentazione_completata`, `ha_cliccato_contatti`.
-Con `--contacts` aggiunge il nome dello studio in prima colonna.
+produce un file Excel a due fogli: **Riepilogo** (una riga per contatto,
+solo le 3 domande che contano — ha visto tutto? ha cliccato un contatto?
+quante slide? — leggibile da chiunque) e **Dettaglio eventi** (stesso
+profilo con il conteggio di ogni singolo evento, custom e automatico).
+Con `--contacts` abbina il nome dello studio a ogni ref.
 
 **Quando**: dopo gli invii, ogni volta che serve un report aggiornato.
 
 **Come**:
 ```bash
 python ga4_report_builder.py export.csv
-python ga4_report_builder.py export.csv --contacts lista_ref_completa_42.csv --out report_completo.csv
+python ga4_report_builder.py export.csv --contacts lista_ref_completa_42.csv
+python ga4_report_builder.py export.csv --contacts lista_ref_completa_42.csv --out report_ottobre.xlsx
 ```
 
 **Input**:
@@ -131,18 +135,33 @@ python ga4_report_builder.py export.csv --contacts lista_ref_completa_42.csv --o
 - `--contacts` (facoltativo): CSV con colonne `ref` e `studio` — oppure
   `nome`, accettato come alias: la lista ufficiale va bene così com'è
 
-**Output**: `report_per_contatto.csv` (o `--out`), una riga per ref.
+**Output**: `report_per_contatto.xlsx` (default) o, con `--out file.csv`,
+un CSV piatto col solo foglio Riepilogo (nessun dettaglio per evento —
+per quello serve `.xlsx`). Righe ordinate alfabeticamente per studio.
+Un ref presente nell'export ma assente dalla lista contatti (tipicamente
+un codice di test/debug usato per verificare il tracciamento, es.
+`test999`) non viene scartato né lasciato vuoto: riceve l'etichetta
+"Ref non trovato in lista contatti" così resta visibile e distinguibile
+da uno studio vero, invece di sparire o confondersi con un dato mancante.
 
 **Esclude automaticamente**: traffico `localhost`/`*.netlify.app`, righe
-`(not set)` (visite non da email, escluse con messaggio), riga "Totale
-complessivo". Se nell'export ci sono metriche oltre a `Conteggio eventi`
-(es. "Utenti totali") vengono ignorate, non sommate per sbaglio.
+"Totale complessivo", e il traffico senza `ref` — che nello stesso export
+GA4 può comparire in DUE forme diverse per lo stesso identico significato
+(visita diretta, non da un link email): il testo letterale `(not set)`
+**oppure** la cella semplicemente vuota. Lo script esclude entrambe (fix
+del 10/07/2026: prima veniva riconosciuto solo il testo letterale, e le
+righe con cella vuota finivano in un finto "contatto" con ref vuoto nel
+report). Se nell'export ci sono metriche oltre a `Conteggio eventi` (es.
+"Utenti totali") vengono ignorate, non sommate per sbaglio.
 
-**Attenzione a `eventi_slide_view`**: conta gli EVENTI slide_view (le
+**Attenzione a `Slide viste (eventi)`**: conta gli EVENTI slide_view (le
 rivisite contano), non le slide distinte viste. Per il dettaglio per
 slide serve l'estensione con `slide_name` (prevista: secondo output in
 formato lungo `ref, slide_name, viste` + colonne `slide_distinte_viste`
 e `max_slide_raggiunta`).
+
+**Requisito aggiuntivo per questo script**: `pip install openpyxl` oltre
+a pandas (serve per scrivere il file `.xlsx` formattato).
 
 ---
 
@@ -152,8 +171,9 @@ Il `.gitignore` del repo esclude già:
 
 | Regola | Cosa copre |
 |---|---|
-| `tools/ga4-report/*.csv` | Qualunque CSV in questa cartella: export GA4, liste contatti, report |
-| `contatti.csv`, `report_per_contatto*.csv` | Gli stessi file se creati per sbaglio altrove nel repo |
+| `tools/ga4-report/*.csv`, `*.xlsx` | Qualunque CSV/Excel in questa cartella: export GA4, liste contatti, report |
+| `contatti.csv`, `report_per_contatto*.csv`/`.xlsx` | Gli stessi file se creati per sbaglio altrove nel repo |
+| `/*.csv`, `/*.xlsx` (solo root del progetto) | Rete di sicurezza: se lo script viene lanciato dalla root invece che da questa cartella (es. `python tools/ga4-report/genera_ref.py contatti.csv` con `contatti.csv` nella cartella corrente), l'export/report finisce comunque escluso — è già successo con `download.csv`/`prova.csv`, mai finiti committati ma non protetti finché non aggiunta questa regola |
 | `generatore_email.html` (root) | Il generatore con l'array studi completo |
 
 Il motivo, valido per tutti: la **mappatura ref → identità reale**
@@ -176,3 +196,13 @@ contengono nessun dato — lavorano su file che restano fuori.
   segnalati) e testato contro la lista reale: 42 ref in ingresso →
   42 righe nel report. Aggiunti genera_generatore.py e genera_ref.py,
   entrambi testati sulla stessa lista reale.
+- 10/07/2026 (seconda passata, su export GA4 reale) — corretta
+  l'esclusione del traffico senza ref: nello stesso export puo' comparire
+  sia come testo `(not set)` sia come cella vuota, solo il primo caso
+  veniva riconosciuto. Output riprogettato per leggibilità: Excel a due
+  fogli con intestazione formattata, colonne riordinate/rinominate in
+  italiano, booleani come Sì/No, ordinamento alfabetico, ref senza
+  corrispondenza nella lista contatti etichettati invece che lasciati
+  vuoti. Messaggi d'errore per export malformati ripuliti (niente più
+  traceback Python a schermo). Aggiunta protezione `.gitignore` per CSV/
+  XLSX lasciati per sbaglio nella root del progetto.
