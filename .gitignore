@@ -16,9 +16,15 @@ dist-ssr
 # (vedi _reference/PIANO_TRACCIAMENTO_ANALYTICS.md, sezione "Parametro ref")
 generatore_email.html
 
-# Dati di lavoro GA4: export, mappatura contatti e report derivati — mai nel repo
-tools/ga4-report/*.csv
-tools/ga4-report/*.xlsx
+# Dati di lavoro GA4: export, mappatura contatti e report derivati — mai nel repo.
+# "**" (non "*"): copre anche le sottocartelle di lavoro create dentro
+# tools/ga4-report/ (es. report-collaboratori/, testdebug/) — un singolo
+# "*" in sintassi gitignore NON attraversa la barra "/", quindi un file
+# dentro una sottocartella non sarebbe stato escluso (verificato: due
+# sottocartelle create il 14/07/2026 risultavano "??" in git status
+# nonostante questa regola, prima della correzione a "**").
+tools/ga4-report/**/*.csv
+tools/ga4-report/**/*.xlsx
 contatti.csv
 report_per_contatto*.csv
 report_per_contatto*.xlsx
