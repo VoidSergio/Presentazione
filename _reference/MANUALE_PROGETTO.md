@@ -3,7 +3,12 @@
 Guida completa per chi riprende questo progetto senza alcun contesto
 pregresso (incluso chi lo ha scritto, tra sei mesi). Non duplica gli altri
 documenti: li collega, spiega perché esistono e in che ordine leggerli.
-Scritto il 10/07/2026.
+Scritto il 10/07/2026, aggiornato il 14/07/2026.
+
+**Stato: LANCIATO.** Le 42 email al canale collaboratori sono state inviate
+il 14/07/2026 — dettagli in
+[STATO_PROGETTO_PRESENTAZIONE_E_MARKETING.md](STATO_PROGETTO_PRESENTAZIONE_E_MARKETING.md),
+sezione 7 (esito verifiche pre-lancio) e sezione 8 (gestione recapiti falliti).
 
 ## Indice
 
@@ -203,13 +208,16 @@ Sintesi delle scelte non ovvie, con il documento dove sono argomentate:
 
 ## 6. Problemi noti e loro stato
 
-Aggiornato al 10/07/2026:
+Aggiornato al 14/07/2026 (post-lancio):
 
 | Problema | Stato |
 |---|---|
 | Refuso cover "un esecuzione" | **Risolto** e verificato live (commit `0de2ba0`) |
 | `slide_number` con formato misto (stringa "03" su carousel_swipe) | **Risolto** nel codice (`31ef49b`); i dati GA4 raccolti PRIMA del fix mostrano ancora `3` e `03` come valori distinti |
-| og:image del branch collaboratori | **Aperto**: punta ancora alla grafica con il copy per clienti finali; la nuova immagine è in preparazione (fornita dall'esterno, non generata qui) |
+| og:image del branch collaboratori | **Risolto** e verificato live (commit `e666b39`, `og-cover-collaboratori.png`) |
+| Banner cookie Silktide: posizione banner + icona persistente | **Risolto** e verificato live (`d24e460`, `e9e1050`, `b798e93`) — banner `bottomCenter`, icona `bottomRight` ridotta a 36×36px con freccia |
+| Colonna `link` nel CSV contatti (dominio presentazione → collaboratori) | **Risolto** (fuori dal repo, nessun commit — vedi [STATO](STATO_PROGETTO_PRESENTAZIONE_E_MARKETING.md), sezione 7) |
+| Test end-to-end fresco pre-lancio (ref mai usato, 7 slide, export da scheda Produzione) | **Nessuna prova trovata che sia mai stato eseguito** — segnalato in audit del 14/07/2026, vedi [STATO](STATO_PROGETTO_PRESENTAZIONE_E_MARKETING.md) sezione 7. Non retroattivamente risolvibile: da tenere presente leggendo i primi dati reali |
 | `seconds_spent` sottostima l'ultima slide (niente pagehide) e misura tempo di orologio (tab in background gonfia) | **Compromesso accettato**, documentato in [GA4_PARAMETRI_TRACCIAMENTO.md](GA4_PARAMETRI_TRACCIAMENTO.md), limiti 1-2 |
 | Microsoft Clarity | **Rimandato**: in attesa del progetto Clarity creato dall'account aziendale ([PIANO](PIANO_TRACCIAMENTO_ANALYTICS.md), "Rimandato") |
 | Privacy policy aggiornata (GA4, trasferimenti USA) | **Bozza da revisione legale**, non pubblicare prima ([PIANO](PIANO_TRACCIAMENTO_ANALYTICS.md), decisione 7) |
