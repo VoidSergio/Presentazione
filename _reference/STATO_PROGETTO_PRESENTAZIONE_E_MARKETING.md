@@ -1,7 +1,12 @@
 # Rilievo Contract — Stato del progetto (presentazione + email marketing)
 
-Ultimo aggiornamento: 10/07/2026. Documento di riferimento per riprendere il
+Ultimo aggiornamento: 14/07/2026. Documento di riferimento per riprendere il
 lavoro in qualunque sessione futura, senza dover ricostruire il contesto da zero.
+
+**Stato attuale: LANCIATO.** Le 42 email al canale collaboratori sono state
+inviate il 14/07/2026 — vedi sezione 7. Il resto del documento (sezioni 1-6)
+descrive ancora correttamente com'è stato costruito tutto; la sezione 7
+raccoglie cosa è cambiato con l'invio reale.
 
 ---
 
@@ -266,3 +271,76 @@ poi implementazione):
   se la lista cresce oltre la gestione manuale via Gmail — darebbe
   aperture/click per destinatario nativamente, senza bisogno di link
   personalizzati manuali
+
+Con il lancio avvenuto (sezione 7), questi punti vanno ripresi guidati dai
+primi segnali reali (tasso di apertura, completamento presentazione, click
+sui contatti) invece che a tavolino — vedi nota in sezione 7.
+
+---
+
+## 7. Lancio della campagna collaboratori (14/07/2026)
+
+Le 42 email sono state inviate tramite `generatore_email.html` + Gmail
+(procedura sezione 3). Prima del lancio erano aperti alcuni interventi
+("outstanding items pre-lancio"): verificati uno per uno contro codice e
+commit, risultano tutti chiusi tranne un dettaglio organizzativo interno.
+
+| Intervento | Stato | Verifica |
+|---|---|---|
+| Refuso cover "un esecuzione" → "un'esecuzione" | **Risolto**, live | Commit `0de2ba0`, pushato; testo corretto confermato sul sito live |
+| og:image dedicata al branch collaboratori | **Risolto**, live | Commit `e666b39`, pushato; confermato via richiesta diretta al sito live (`og-cover-collaboratori.png`) |
+| Colonna `link` nel CSV contatti (dominio presentazione → collaboratori) | **Risolto** | Corretto direttamente sul CSV esterno al repo (non genera commit, il file non è tracciato); verificato rigenerando `generatore_email.html` prima/dopo la modifica — output identico, confermando che lo script non dipendeva da quella colonna |
+| Banner cookie Silktide: posizione e dimensione icona persistente | **Risolto**, live | Banner spostato in `bottomCenter` (`d24e460`), icona persistente spostata in `bottomRight` (`e9e1050`) e ridotta a 36×36px con freccia al posto del biscotto (`b798e93`) — tutti e tre pushati, confermato sul sito live |
+
+**Nota aperta, non bloccante per il lancio già avvenuto**: al momento di
+questo audit risulta **1 commit locale non ancora pushato**
+(`dac6424`, fix di un `.gitignore` per le sottocartelle di lavoro di
+`tools/ga4-report/`) — riguarda solo l'organizzazione interna dei file GA4,
+non il sito pubblicato, ma va pushato quando si riprende il lavoro.
+
+### Lacuna trovata durante l'audit: nessuna prova di un test end-to-end fresco pre-lancio
+
+Nelle sessioni precedenti era stato discusso più volte un "test end-to-end
+fresco" da fare prima dell'invio reale: un codice `ref` mai usato, percorrere
+tutte le 7 slide, poi esportare dalla scheda GA4 "Profilo per contatto —
+Produzione" per verificare che l'intera catena (sito → evento → GA4 → export
+→ report) funzionasse con la configurazione realmente usata per il lancio.
+**Cercando in tutto il repository (commit, documentazione, nomi di file) non
+ne risulta traccia**: nessun commit, nessuna nota, nessun export con un ref
+dichiaratamente "test pulito pre-lancio". È possibile che questo test non sia
+mai stato eseguito prima dell'invio delle 42 email. Non è un problema
+retroattivamente risolvibile (il lancio è già avvenuto), ma va tenuto
+presente leggendo i primi dati reali: se qualcosa nella catena di
+tracciamento non funzionasse come atteso, lo si scoprirebbe solo ora, non in
+un ambiente di prova controllato.
+
+---
+
+## 8. Gestione recapiti falliti
+
+Con una lista raccolta manualmente da siti/pagine contatti, alcuni indirizzi
+possono risultare non più validi. Confermato almeno un caso con errore
+permanente (bounce hard, codice SMTP `550 5.1.1`, mailbox inesistente).
+
+**L'elenco effettivo degli indirizzi falliti non va in questo documento**
+(è dato sensibile, collegabile a un contatto specifico) — resta solo nel CSV
+locale (`lista_ref_completa_42.csv`) e nel CRM. Qui va solo il processo.
+
+### Processo da seguire per ogni recapito fallito
+
+1. **Verificare il dominio**: aprire il sito dello studio, controllare se
+   l'indirizzo email è cambiato (rebranding, cambio provider, refresh del
+   sito) — spesso la causa di un `550 5.1.1` è un indirizzo semplicemente
+   non più in uso, non un errore di battitura nella lista originale
+2. **Cercare un indirizzo alternativo**: pagina contatti del sito, profilo
+   LinkedIn dello studio, form di contatto, o telefono se disponibile
+3. **Aggiornare il CSV mantenendo lo stesso `ref`**: modificare solo la
+   colonna `email` nella riga di quel contatto in
+   `lista_ref_completa_42.csv` — il `ref` NON va rigenerato: è già stato
+   "speso" nel primo giro di invii, cambiarlo perderebbe l'eventuale
+   attribuzione di click già arrivati con quel codice
+4. **Rigenerare il generatore**: `python tools/ga4-report/genera_generatore.py
+   lista_ref_completa_42.csv` — il nuovo indirizzo viene preso in automatico
+   dalla colonna `email` aggiornata, il link `?ref=` resta identico
+5. **Reinviare singolarmente** solo al nuovo indirizzo, non rifare l'intero
+   giro di invii
