@@ -2,13 +2,18 @@
 // Espone lo stato della slide attiva, un ref da mettere sul container
 // con scroll-snap verticale, e una funzione vaiASlide per saltare a un
 // indice specifico (tastiera, e in futuro NavigationDots).
+// numeroTotaleSlide e nomiSlide sono opzionali (default 7 slide, il deck
+// hotel/collaboratori): quando passati esplicitamente permettono di
+// riusare lo stesso hook per un deck con un numero diverso di slide, es.
+// PresentazioneAgenzie.jsx (3 slide) — stesso principio di margine/
+// maxWidth opzionali gia' usato in SectionLabel/PageTitle.
 import { useEffect, useRef, useState } from 'react';
 import { trackEvent } from '../utils/analytics';
 
-const NUMERO_TOTALE_SLIDE = 7;
+const NUMERO_TOTALE_SLIDE_DEFAULT = 7;
 
-// NOMI_SLIDE: ordine post-riordino dell'08/07/2026 (vedi Presentation.jsx).
-const NOMI_SLIDE = [
+// NOMI_SLIDE_DEFAULT: ordine post-riordino dell'08/07/2026 (vedi Presentation.jsx).
+const NOMI_SLIDE_DEFAULT = [
   'cover',
   'lavori-scelti',
   'cosa-facciamo',
@@ -18,7 +23,17 @@ const NOMI_SLIDE = [
   'contatti',
 ];
 
-function useSlideNavigation(onPrimoScroll) {
+function useSlideNavigation(onPrimoScroll, numeroTotaleSlide, nomiSlide) {
+  let totaleSlide = NUMERO_TOTALE_SLIDE_DEFAULT;
+  if (numeroTotaleSlide !== undefined) {
+    totaleSlide = numeroTotaleSlide;
+  }
+
+  let nomiSlideRisolti = NOMI_SLIDE_DEFAULT;
+  if (nomiSlide !== undefined) {
+    nomiSlideRisolti = nomiSlide;
+  }
+
   const [slideAttiva, setSlideAttiva] = useState(0);
   const containerRef = useRef(null);
   const stoScollandoProgrammaticamente = useRef(false);
@@ -31,8 +46,8 @@ function useSlideNavigation(onPrimoScroll) {
 
     if (indiceValido < 0) {
       indiceValido = 0;
-    } else if (indiceValido > NUMERO_TOTALE_SLIDE - 1) {
-      indiceValido = NUMERO_TOTALE_SLIDE - 1;
+    } else if (indiceValido > totaleSlide - 1) {
+      indiceValido = totaleSlide - 1;
     }
 
     const container = containerRef.current;
@@ -122,7 +137,7 @@ function useSlideNavigation(onPrimoScroll) {
 
     trackEvent('slide_view', {
       slide_number: slideAttiva + 1,
-      slide_name: NOMI_SLIDE[slideAttiva],
+      slide_name: nomiSlideRisolti[slideAttiva],
     });
 
     // full_presentation_viewed: semantica "e' arrivato in fondo al deck",
@@ -133,7 +148,7 @@ function useSlideNavigation(onPrimoScroll) {
     // completa. Per la lettura piu' stretta servirebbe un Set delle slide
     // gia' viste da controllare qui: deciso di non farlo, la versione
     // semplice basta per ora (discusso con l'utente, 08/07/2026).
-    if (slideAttiva === NUMERO_TOTALE_SLIDE - 1 && presentazioneVistaRef.current === false) {
+    if (slideAttiva === totaleSlide - 1 && presentazioneVistaRef.current === false) {
       presentazioneVistaRef.current = true;
       trackEvent('full_presentation_viewed', {});
     }
@@ -160,7 +175,7 @@ function useSlideNavigation(onPrimoScroll) {
         vaiASlide(0);
       } else if (evento.key === 'End') {
         evento.preventDefault();
-        vaiASlide(NUMERO_TOTALE_SLIDE - 1);
+        vaiASlide(totaleSlide - 1);
       }
     }
 
