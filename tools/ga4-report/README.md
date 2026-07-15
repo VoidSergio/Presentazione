@@ -3,7 +3,17 @@
 Tre script Python per il flusso completo del canale collaboratori: dalla
 lista grezza dei contatti fino al report di comportamento per singolo
 studio. Questa cartella è anche la cartella di lavoro per i CSV: il
-`.gitignore` del repo esclude qualunque `*.csv` qui dentro.
+`.gitignore` del repo esclude qualunque `*.csv`/`*.xlsx` qui dentro,
+**comprese le sottocartelle** (regola `**/*.csv`, non solo `*.csv` —
+serve per coprire un'organizzazione come `report-collaboratori/` +
+`testdebug/`, vedi nota sotto).
+
+**Organizzare i dati di lavoro in sottocartelle è supportato e incoraggiato**
+quando i file iniziano ad accumularsi — ad esempio separando gli export
+reali (`report-collaboratori/`) da quelli usati solo per verificare lo
+script (`testdebug/`). Qualunque sottocartella creata dentro
+`tools/ga4-report/` resta protetta dallo stesso `.gitignore`, verificato
+esplicitamente il 14/07/2026.
 
 Requisito comune: Python 3. Solo `ga4_report_builder.py` richiede pandas
 e openpyxl (`pip install pandas openpyxl`, su alcuni sistemi con
@@ -211,7 +221,7 @@ Il `.gitignore` del repo esclude già:
 
 | Regola | Cosa copre |
 |---|---|
-| `tools/ga4-report/*.csv`, `*.xlsx` | Qualunque CSV/Excel in questa cartella: export GA4, liste contatti, report |
+| `tools/ga4-report/**/*.csv`, `**/*.xlsx` | Qualunque CSV/Excel in questa cartella **e nelle sue sottocartelle** (es. `report-collaboratori/`, `testdebug/`): export GA4, liste contatti, report. Il doppio asterisco è necessario — un singolo `*` in sintassi gitignore non attraversa la barra `/`, quindi non avrebbe coperto i file dentro le sottocartelle (bug reale, corretto il 14/07/2026) |
 | `contatti.csv`, `report_per_contatto*.csv`/`.xlsx` | Gli stessi file se creati per sbaglio altrove nel repo |
 | `/*.csv`, `/*.xlsx` (solo root del progetto) | Rete di sicurezza: se lo script viene lanciato dalla root invece che da questa cartella (es. `python tools/ga4-report/genera_ref.py contatti.csv` con `contatti.csv` nella cartella corrente), l'export/report finisce comunque escluso — è già successo con `download.csv`/`prova.csv`, mai finiti committati ma non protetti finché non aggiunta questa regola |
 | `generatore_email.html` (root) | Il generatore con l'array studi completo |
@@ -285,3 +295,10 @@ contengono nessun dato — lavorano su file che restano fuori.
   identici alla versione precedente per evento) e con un export sintetico
   dedicato per la sezione canale (Telefono=4, Email=2, `(not set)`
   correttamente escluso dal conteggio).
+- 14/07/2026 — corretto un bug nel `.gitignore`: la regola
+  `tools/ga4-report/*.csv` (singolo asterisco) non copriva i file dentro
+  sottocartelle create in questa directory (es. `report-collaboratori/`,
+  `testdebug/`, introdotte in questa data per separare dati reali da dati
+  di test) — verificato con `git check-ignore` che finivano "??" in
+  `git status` nonostante la regola. Corretto in `**/*.csv`/`**/*.xlsx`
+  (attraversa la barra), riverificato su entrambi i casi.
