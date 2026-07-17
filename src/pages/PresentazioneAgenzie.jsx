@@ -192,11 +192,11 @@ function PresentazioneAgenzie() {
             via del loro stesso max-w. */}
         <SlideLayout numeroSlide="01" indiceSlide={0} sfondo="dark" immagineFondo={'/images/' + hero.immagineFondo}>
           <div className="w-full">
-            <div className=" text-gold text-xs uppercase tracking-[0.24em] font-medium mb-5 max-w-[26ch]">
+            <div className=" max-sm:hidden mb-10 text-gold text-xs uppercase tracking-[0.24em] font-medium mb-5 max-w-[26ch]">
               {hero.eyebrow}
             </div>
 
-            <h1 className="my-10 font-display font-bold text-cream leading-[1.08] text-[clamp(30px,4.8vw,58px)] max-w-xl">
+            <h1 className="mb-10 font-display font-bold text-cream leading-[1.08] text-[clamp(30px,4.8vw,58px)] max-w-xl">
               {hero.titoloRighe[0]}
               <br />
               {hero.titoloRighe[1]}
