@@ -208,7 +208,7 @@ Sintesi delle scelte non ovvie, con il documento dove sono argomentate:
 
 ## 6. Problemi noti e loro stato
 
-Aggiornato al 14/07/2026 (post-lancio):
+Aggiornato al 16/07/2026 (post-lancio):
 
 | Problema | Stato |
 |---|---|
@@ -217,7 +217,7 @@ Aggiornato al 14/07/2026 (post-lancio):
 | og:image del branch collaboratori | **Risolto** e verificato live (commit `e666b39`, `og-cover-collaboratori.png`) |
 | Banner cookie Silktide: posizione banner + icona persistente | **Risolto** e verificato live (`d24e460`, `e9e1050`, `b798e93`) — banner `bottomCenter`, icona `bottomRight` ridotta a 36×36px con freccia |
 | Colonna `link` nel CSV contatti (dominio presentazione → collaboratori) | **Risolto** (fuori dal repo, nessun commit — vedi [STATO](STATO_PROGETTO_PRESENTAZIONE_E_MARKETING.md), sezione 7) |
-| Test end-to-end fresco pre-lancio (ref mai usato, 7 slide, export da scheda Produzione) | **Nessuna prova trovata che sia mai stato eseguito** — segnalato in audit del 14/07/2026, vedi [STATO](STATO_PROGETTO_PRESENTAZIONE_E_MARKETING.md) sezione 7. Non retroattivamente risolvibile: da tenere presente leggendo i primi dati reali |
+| Test end-to-end fresco pre-lancio (ref mai usato, 7 slide, export da scheda Produzione) | **Risolto**: eseguito il 16/07/2026 (ref dedicato, export dalla scheda Produzione, report generato con successo) — chiude la lacuna segnalata in audit del 14/07/2026, vedi [STATO](STATO_PROGETTO_PRESENTAZIONE_E_MARKETING.md) sezione 7 |
 | `seconds_spent` sottostima l'ultima slide (niente pagehide) e misura tempo di orologio (tab in background gonfia) | **Compromesso accettato**, documentato in [GA4_PARAMETRI_TRACCIAMENTO.md](GA4_PARAMETRI_TRACCIAMENTO.md), limiti 1-2 |
 | Microsoft Clarity | **Rimandato**: in attesa del progetto Clarity creato dall'account aziendale ([PIANO](PIANO_TRACCIAMENTO_ANALYTICS.md), "Rimandato") |
 | Privacy policy aggiornata (GA4, trasferimenti USA) | **Bozza da revisione legale**, non pubblicare prima ([PIANO](PIANO_TRACCIAMENTO_ANALYTICS.md), decisione 7) |
