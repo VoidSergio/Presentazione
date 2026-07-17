@@ -130,9 +130,18 @@ function PresentazioneAgenzie() {
   );
 
   const stats = [];
+
   for (let indiceStat = 0; indiceStat < statsBar.length; indiceStat += 1) {
     const voce = statsBar[indiceStat];
-    stats.push(<StatBadge key={voce.tipo} {...voce} />);
+
+    stats.push(
+      <div
+        key={voce.tipo}
+        className={indiceStat === 2 ? 'col-span-2 md:col-span-1 place-self-center md:place-self-auto' : ''}
+      >
+        <StatBadge {...voce} />
+      </div>,
+    );
   }
 
   const vociComeFunziona = [];
@@ -183,23 +192,23 @@ function PresentazioneAgenzie() {
             via del loro stesso max-w. */}
         <SlideLayout numeroSlide="01" indiceSlide={0} sfondo="dark" immagineFondo={'/images/' + hero.immagineFondo}>
           <div className="w-full">
-            <div className="text-gold text-xs uppercase tracking-[0.24em] font-medium mb-5 max-w-[26ch]">
+            <div className=" text-gold text-xs uppercase tracking-[0.24em] font-medium mb-5 max-w-[26ch]">
               {hero.eyebrow}
             </div>
 
-            <h1 className="font-display font-bold text-cream leading-[1.08] text-[clamp(30px,4.8vw,58px)] max-w-xl">
+            <h1 className="my-10 font-display font-bold text-cream leading-[1.08] text-[clamp(30px,4.8vw,58px)] max-w-xl">
               {hero.titoloRighe[0]}
               <br />
               {hero.titoloRighe[1]}
               <br />
-              <span className="italic text-gold font-medium">{hero.titoloCorsivo}</span>
+              <span className="italic text-gold font-medium ">{hero.titoloCorsivo}</span>
             </h1>
 
             <div className="mt-4 text-cream/90 text-sm leading-relaxed max-w-md">
               {paragrafiHero}
             </div>
 
-            <div className="mt-7 md:mt-9 border-t border-gold/25 pt-6 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl">
+            <div className="mt-7 md:mt-9 border-t border-gold/25 pt-6 grid grid-cols-2 md:grid-cols-3 gap-6 max-w-2xl">
               {stats}
             </div>
           </div>
@@ -210,7 +219,7 @@ function PresentazioneAgenzie() {
             (il default di CSS grid stira le colonne alla piu' alta). */}
         <SlideLayout numeroSlide="02" indiceSlide={1} sfondo="dark">
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 items-start">
-            <div className="border border-gold/30 rounded-[2px] p-5 md:p-6">
+            <div className=" max-sm:hidden border border-gold/30 rounded-[2px] p-5 md:p-6">
               <SectionLabel testo="Come funziona" margine="mb-4" />
               <div className="flex flex-col gap-4">
                 {vociComeFunziona}
@@ -225,10 +234,10 @@ function PresentazioneAgenzie() {
                   bene in entrambi i casi, a differenza di un riquadro
                   largo e basso che tagliava male una foto in verticale. */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="order-2 sm:order-1 flex flex-col gap-2.5">
+                <div className="flex flex-col gap-2.5">
                   {passiTocco}
                 </div>
-                <div className="order-1 sm:order-2 aspect-[3/4] overflow-hidden rounded-[2px] bg-cream/5">
+                <div className="">
                   <img
                     src={'/images/' + toccoRilievo.immagine}
                     alt="Totem Materioteca Rilievo Contract"
