@@ -2,10 +2,10 @@
 // immobiliari". Stesso motore a slide (h-screen, scroll-snap, puntini,
 // tastiera) di Presentation.jsx — 4 slide invece di 7, stessi componenti
 // condivisi (SlideLayout, NavigationDots, useSlideNavigation, tutti
-// parametrizzati sul numero di slide). Contenuto da
-// src/content/agenzie/index.js, zero testo hardcoded qui sotto, stessa
-// regola delle altre slide. Le icone (chiave stringa nei dati) restano
-// JSX locali qui, stesso pattern di ServicesSlide.jsx (mappa ICONE).
+// parametrizzati sul numero di slide). Contenuto da src/data/agenzie.js,
+// zero testo hardcoded qui sotto, stessa regola delle altre slide. Le
+// icone (chiave stringa nei dati) restano JSX locali qui, stesso pattern
+// di ServicesSlide.jsx (mappa ICONE).
 // Diventate 4 slide invece di 3 il 15/07/2026: "perche' scegliere
 // Rilievo" aveva la sua slide condivisa con "come funziona" + "un tocco
 // di Rilievo", troppa roba per uno schermo solo (soprattutto da mobile,
@@ -22,7 +22,7 @@ import IconLabelItem from '../components/ui/IconLabelItem';
 import GalleryStrip from '../components/ui/GalleryStrip';
 import {
   hero, statsBar, comeFunziona, toccoRilievo, percheScegliere, gallery, contatti,
-} from '../content/agenzie';
+} from '../data/agenzie';
 
 const NUMERO_SLIDE_AGENZIE = 4;
 const NOMI_SLIDE_AGENZIE = [

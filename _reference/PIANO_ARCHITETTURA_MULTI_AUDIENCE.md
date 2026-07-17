@@ -1,5 +1,18 @@
 # Piano architettura multi-audience — Rilievo Contract
 
+> **SUPERATO / ABBANDONATO — 17/07/2026.** Dopo aver provato il pattern
+> `VITE_AUDIENCE` + `audience.js` proposto qui sotto su questo branch, si e'
+> deciso di NON adottarlo: si continua con l'architettura branch-per-pubblico
+> gia' in uso su `main` e `collaboratori` (un branch = un pubblico, dati/testi
+> cablati direttamente nei componenti/data files, nessuna variabile
+> d'ambiente che sceglie il contenuto a runtime). Il codice di questo branch
+> e' stato aggiornato di conseguenza (vedi commit successivo a questa nota).
+> Il documento resta come riferimento storico delle alternative valutate,
+> non descrive piu' lo stato attuale del codice.
+
+---
+
+
 Documento di analisi e proposta, scritto PRIMA di qualsiasi modifica al
 codice. Obiettivo: decidere come strutturare il progetto per la terza
 audience (agenzie immobiliari) e per quelle che verranno dopo, senza

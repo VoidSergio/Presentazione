@@ -1,10 +1,12 @@
-// content/agenzie/index.js: dati puri per le 3 slide della presentazione
-// "agenzie immobiliari" (PresentazioneAgenzie.jsx). Copy verbatim dal
-// materiale grafico fornito dal cliente (flyer 3 pagine, luglio 2026).
-// Stesso principio di data/services.js e data/workflow.js: zero JSX qui,
-// solo stringhe/array/oggetti. Le icone restano chiavi stringa, il
-// markup SVG vive in PresentazioneAgenzie.jsx (vedi mappa ICONE la',
-// stesso motivo per cui ServicesSlide.jsx tiene il proprio ICONE locale).
+// data/agenzie.js: dati puri per le 4 slide della presentazione "agenzie
+// immobiliari" (PresentazioneAgenzie.jsx). Copy verbatim dal materiale
+// grafico fornito dal cliente (flyer 3 pagine, luglio 2026). Stesso
+// principio di data/services.js e data/workflow.js su main/collaboratori:
+// zero JSX qui, solo stringhe/array/oggetti, un file per branch/pubblico
+// (nessuna selezione a runtime tra piu' pubblichi in questo repo). Le
+// icone restano chiavi stringa, il markup SVG vive in
+// PresentazioneAgenzie.jsx (vedi mappa ICONE la', stesso motivo per cui
+// ServicesSlide.jsx tiene il proprio ICONE locale).
 // gallery e hero usano foto progetto gia' esistenti in public/images/
 // (root, non in una sottocartella agenzie/): scelte da Se il 15/07/2026.
 
