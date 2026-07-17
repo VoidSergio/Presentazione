@@ -190,13 +190,11 @@ function PresentazioneAgenzie() {
             orizzontale" del layout non ha piu' spazio residuo su cui
             agire, e titolo/paragrafo restano allineati a sinistra per
             via del loro stesso max-w. */}
-        <SlideLayout numeroSlide="01" indiceSlide={0} sfondo="dark" immagineFondo={'/images/' + hero.immagineFondo}>
+        <SlideLayout numeroSlide="01" indiceSlide={0} sfondo="dark" immagineFondo={'/images/' + hero.immagineFondo} headerCentro={hero.eyebrow}>
           <div className="w-full">
-            <div className=" max-sm:hidden mb-10 text-gold text-xs uppercase tracking-[0.24em] font-medium mb-5 max-w-[26ch]">
-              {hero.eyebrow}
-            </div>
+            <img src="/images/rilievo-mark-gold.png" alt="Rilievo Contract" className="h-9 md:h-10 mb-5 md:mb-6" />
 
-            <h1 className="mb-10 font-display font-bold text-cream leading-[1.08] text-[clamp(30px,4.8vw,58px)] max-w-xl">
+            <h1 className="mb-8 font-display font-bold text-cream leading-[1.08] text-[clamp(30px,4.8vw,58px)] max-w-xl">
               {hero.titoloRighe[0]}
               <br />
               {hero.titoloRighe[1]}
@@ -208,20 +206,27 @@ function PresentazioneAgenzie() {
               {paragrafiHero}
             </div>
 
-            <div className="mt-7 md:mt-9 border-t border-gold/25 pt-6 grid grid-cols-2 md:grid-cols-3 gap-6 max-w-2xl">
+            <div className="mt-6 md:mt-8 border-t border-gold/25 pt-6 grid grid-cols-2 md:grid-cols-3 gap-6 max-w-2xl">
               {stats}
             </div>
           </div>
         </SlideLayout>
 
-        {/* Slide 02 — come funziona / un tocco di Rilievo. items-start
-            sui due pannelli: non devono avere la stessa altezza forzata
-            (il default di CSS grid stira le colonne alla piu' alta). */}
+        {/* Slide 02 — come funziona / un tocco di Rilievo. items-stretch
+            sui due pannelli (non items-start): la foto verticale del
+            totem rende il pannello destro naturalmente piu' alto, quindi
+            pareggiamo le due colonne alla stessa altezza invece di
+            lasciare il pannello sinistro piu' corto con un vuoto sotto
+            (vedi screenshot desktop del 17/07/2026). Il pannello
+            sinistro diventa flex-col cosi' le 3 voci di "come funziona"
+            si distribuiscono con justify-evenly nello spazio in piu':
+            gap-4 resta come spaziatura minima per quando il pannello non
+            e' stirato (stack mobile/tablet, grid-cols-1). */}
         <SlideLayout numeroSlide="02" indiceSlide={1} sfondo="dark">
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 items-start">
-            <div className=" max-sm:hidden border border-gold/30 rounded-[2px] p-5 md:p-6">
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 items-stretch">
+            <div className=" max-md:hidden border border-gold/30 rounded-[2px] p-5 md:p-6 flex flex-col">
               <SectionLabel testo="Come funziona" margine="mb-4" />
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 flex-1 justify-evenly">
                 {vociComeFunziona}
               </div>
             </div>
@@ -229,19 +234,25 @@ function PresentazioneAgenzie() {
             <div className="border border-gold/30 rounded-[2px] p-5 md:p-6">
               <SectionLabel testo={toccoRilievo.titolo} margine="mb-3 md:mb-4" />
               {/* Foto verticale (totem contro finestra, vedi originale):
-                  affiancata alla lista su desktop (grid-cols-2), impilata
-                  sopra su mobile — un aspect-ratio verticale (3/4) sta
-                  bene in entrambi i casi, a differenza di un riquadro
-                  largo e basso che tagliava male una foto in verticale. */}
+                  affiancata alla lista da sm in su (grid-cols-2), impilata
+                  sopra su mobile. Sotto sm la foto e' da sola nella sua
+                  riga (nessuno stretch di un'altra colonna a darle
+                  un'altezza), quindi senza un limite l'elemento sostituito
+                  usa il suo aspect-ratio naturale sulla larghezza piena
+                  del pannello — su schermi piccoli (es. 375x667) questo
+                  da solo bastava a mandare la slide in overflow verticale
+                  (bug trovato il 17/07/2026). max-h-64 la tiene compatta
+                  sotto sm; da sm in su torna a h-full/object-cover, la
+                  stessa resa gia' approvata per il pannello affiancato. */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2.5">
+                <div className="flex flex-col gap-2.5 justify-evenly">
                   {passiTocco}
                 </div>
                 <div className="">
                   <img
                     src={'/images/' + toccoRilievo.immagine}
                     alt="Totem Materioteca Rilievo Contract"
-                    className="w-full h-full object-cover"
+                    className="w-full max-h-64 sm:max-h-none sm:h-full object-cover"
                   />
                 </div>
               </div>

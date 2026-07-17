@@ -20,7 +20,9 @@
 // restare dietro solo al contenuto di QUESTA slide.
 import SlideHeader from './SlideHeader';
 
-function SlideLayout({ numeroSlide, indiceSlide, sfondo, footer, immagineFondo, children }) {
+function SlideLayout({
+  numeroSlide, indiceSlide, sfondo, footer, immagineFondo, headerCentro, children,
+}) {
   let classeSfondo = 'bg-cream';
   if (sfondo === 'dark') {
     classeSfondo = 'bg-dark';
@@ -42,7 +44,7 @@ function SlideLayout({ numeroSlide, indiceSlide, sfondo, footer, immagineFondo, 
           <div className="absolute inset-0 bg-gradient-to-r from-dark from-0% via-dark/90 via-58% to-dark/15 to-100% -z-10" />
         </>
       )}
-      <SlideHeader numeroSlide={numeroSlide} sfondo={sfondo} />
+      <SlideHeader numeroSlide={numeroSlide} sfondo={sfondo} centro={headerCentro} />
       <div className="flex-1 flex items-center justify-center">
         {children}
       </div>
