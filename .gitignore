@@ -47,3 +47,7 @@ report_per_contatto*.xlsx
 *.njsproj
 *.sln
 *.sw?
+
+# Materiale locale per il brief Instagram (asset grezzi, bozze, zip foto):
+# mai da committare nel repo.
+instagram-brief/
