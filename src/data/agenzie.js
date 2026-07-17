@@ -62,8 +62,10 @@ export const comeFunziona = [
 
 export const toccoRilievo = {
   titolo: 'Un tocco di Rilievo nella tua agenzia',
-  // TODO: foto del totem materioteca ancora da fornire.
-  immagine: 'agenzie/totem-materioteca.jpg',
+  // Foto del totem materioteca fornita da Se il 17/07/2026 (formato
+  // verticale, 1125x1398), in public/images/ come le altre foto
+  // progetto, nessuna sottocartella agenzie/ (mai esistita nel repo).
+  immagine: 'totem-materioteca.jpg',
   passi: [
     {
       numero: '01',
