@@ -298,21 +298,21 @@ questo audit risulta **1 commit locale non ancora pushato**
 `tools/ga4-report/`) — riguarda solo l'organizzazione interna dei file GA4,
 non il sito pubblicato, ma va pushato quando si riprende il lavoro.
 
-### Lacuna trovata durante l'audit: nessuna prova di un test end-to-end fresco pre-lancio
+### Test end-to-end fresco: eseguito il 16/07/2026 (lacuna dell'audit chiusa)
 
 Nelle sessioni precedenti era stato discusso più volte un "test end-to-end
 fresco" da fare prima dell'invio reale: un codice `ref` mai usato, percorrere
 tutte le 7 slide, poi esportare dalla scheda GA4 "Profilo per contatto —
 Produzione" per verificare che l'intera catena (sito → evento → GA4 → export
 → report) funzionasse con la configurazione realmente usata per il lancio.
-**Cercando in tutto il repository (commit, documentazione, nomi di file) non
-ne risulta traccia**: nessun commit, nessuna nota, nessun export con un ref
-dichiaratamente "test pulito pre-lancio". È possibile che questo test non sia
-mai stato eseguito prima dell'invio delle 42 email. Non è un problema
-retroattivamente risolvibile (il lancio è già avvenuto), ma va tenuto
-presente leggendo i primi dati reali: se qualcosa nella catena di
-tracciamento non funzionasse come atteso, lo si scoprirebbe solo ora, non in
-un ambiente di prova controllato.
+L'audit del 14/07/2026 non ne aveva trovato traccia nel repository.
+
+**Il 16/07/2026 il test è stato finalmente eseguito**: ref dedicato mai
+usato in precedenza, percorse tutte le slide, export effettuato dalla scheda
+GA4 "Profilo per contatto — Produzione", report generato con successo.
+L'intera catena (sito → evento → GA4 → export → report) risulta verificata
+con la configurazione realmente usata per il lancio. Lacuna segnalata
+nell'audit del 14/07/2026 chiusa.
 
 ---
 
