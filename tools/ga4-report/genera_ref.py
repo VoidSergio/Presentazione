@@ -1,106 +1,284 @@
 """
 Genera i codici ref mancanti per una lista contatti — Rilievo Contract.
 
-Dato un CSV con almeno le colonne nome,email (colonna ref assente o
-parzialmente vuota), popola i ref mancanti e scrive un NUOVO file con
-suffisso _con_ref.csv accanto all'input. L'input non viene mai toccato:
-la lista contatti e' l'unica copia della mappatura ref -> persona (i ref
-gia' spediti nelle email NON sono ricostruibili da nessuna formula, vedi
-sotto), quindi lo script non deve poterla corrompere nemmeno per un bug.
+Accetta sia CSV che XLSX in input (rilevato dall'estensione — nessuna
+opzione da passare). Per XLSX legge TUTTI i fogli tranne uno chiamato
+"Riepilogo" e li tratta come un'unica lista di contatti ai fini del
+controllo duplicati/collisioni: se il file ha una tab "Architetti" e una
+"Agenzie immobiliari", un ref generato per un'agenzia viene comunque
+controllato contro quelli degli architetti (e viceversa) — cosi' due
+pubblici diversi non possono mai finire con lo stesso codice per errore.
+L'input non viene mai toccato: la lista contatti e' l'unica copia della
+mappatura ref -> persona (i ref gia' spediti nelle email NON sono
+ricostruibili da nessuna formula, vedi sotto), quindi lo script scrive
+sempre su un file nuovo.
 
-FORMULA DEI REF NUOVI (verificata il 10/07/2026):
-I 42 ref storici sono codici CASUALI — verificato provando md5/sha1/sha256
-su ~120 varianti di chiave (email, nome, id, slug, sali) senza nessun
-match: non esiste una "logica MD5 esistente" da replicare. I ref gia'
-assegnati vanno quindi trattati come dati immutabili. Per i contatti
-NUOVI questo script usa una formula deterministica e documentata:
+L'output rispetta il formato dell'input: XLSX in -> XLSX out (stessa
+struttura a fogli, stessa formattazione), CSV in -> CSV out. Con --out
+puoi comunque forzare l'altro formato (es. leggere un XLSX e scrivere un
+CSV) cambiando semplicemente l'estensione del percorso passato.
 
-    ref = md5(email minuscola senza spazi)[:5]
-
-Deterministica = rilanciare lo script sugli stessi contatti produce gli
-stessi codici. In caso di collisione con un ref gia' esistente, si
-ritenta con md5(email + "#2"), "#3", ... e si stampa un avviso esplicito.
+FORMULA DEI REF NUOVI (aggiornata il 20/07/2026):
+I ref sono codici CASUALI a 5 caratteri esadecimali (es. "a1f1c"), non
+derivati da nessuna formula (non piu' md5(email) come in una versione
+precedente di questo script) — scelta per restare coerenti con i 42 ref
+storici, anch'essi casuali e non rigenerabili (vedi
+_reference/PLAYBOOK_NUOVO_PUBBLICO.md, sezione "Ref code non
+deterministici"). Implicazione pratica: il file con la mappatura
+ref -> contatto e' l'UNICA copia di quell'informazione al mondo. Tienilo
+al sicuro — backup vero, non solo locale — perche' se si perde non c'e'
+calcolo che lo ricostruisca (e' gia' successo, vedi STATO_PROGETTO...).
 
 USO:
     python genera_ref.py nuovi_contatti.csv
-    python genera_ref.py nuovi_contatti.csv --out lista_completa.csv
+    python genera_ref.py Lista_Contatti_Rilievo_Contract.xlsx
+    python genera_ref.py lista.xlsx --out lista_aggiornata.xlsx
 """
 
 import argparse
 import csv
-import hashlib
 import re
+import secrets
 import sys
 from pathlib import Path
 
+try:
+    from openpyxl import Workbook, load_workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+    OPENPYXL_DISPONIBILE = True
+except ImportError:
+    OPENPYXL_DISPONIBILE = False
+
 FORMATO_REF = re.compile(r"^[0-9a-f]{5}$")
+FOGLIO_DA_IGNORARE = "riepilogo"
+
+# Intestazioni "belle" (come in Lista_Contatti_Rilievo_Contract.xlsx, es.
+# "Nome", "Città", "Link presentazione") -> nome colonna canonico usato
+# internamente dallo script (minuscolo, senza accenti, come nel CSV).
+ALIAS_COLONNE = {
+    "id": "id",
+    "nome": "nome",
+    "città": "citta",
+    "citta": "citta",
+    "email": "email",
+    "categoria": "categoria",
+    "ref": "ref",
+    "link": "link",
+    "link presentazione": "link",
+    "tipo": "tipo",
+}
+
+
+def canonicalizza_intestazione(testo):
+    """Normalizza un'intestazione di colonna (qualunque maiuscole/accenti
+    usati per la leggibilita' nell'Excel) al nome canonico usato dallo
+    script. Colonne non riconosciute passano invariate (minuscole)."""
+    chiave = (testo or "").strip().lower()
+    return ALIAS_COLONNE.get(chiave, chiave)
+
+# --- stile Excel, coerente con Lista_Contatti_Rilievo_Contract.xlsx ---
+COLORE_HEADER_BG = "1C1C1A"
+COLORE_HEADER_TESTO = "F8F5EF"
+COLORE_ALT_RIGA = "F8F5EF"
+COLORE_BORDO = "D9D6CE"
+COLORE_LINK = "0563C1"
 
 
 def normalizza_email(email):
-    return email.strip().lower()
+    return (email or "").strip().lower()
 
 
-def genera_codice(email_normalizzata, tentativo):
-    """md5 dell'email normalizzata, primi 5 caratteri esadecimali.
-    Dal secondo tentativo in poi (collisioni) aggiunge '#2', '#3', ...
-    alla chiave — sempre deterministico, mai casuale."""
-    chiave = email_normalizzata
-    if tentativo > 1:
-        chiave = email_normalizzata + "#" + str(tentativo)
-    return hashlib.md5(chiave.encode("utf-8")).hexdigest()[:5]
+def genera_codice_casuale(occupati):
+    """5 caratteri esadecimali casuali, ritenta finche' non ne trova uno libero."""
+    while True:
+        candidato = secrets.token_hex(3)[:5]
+        if candidato not in occupati:
+            return candidato
 
+
+# ------------------------- lettura -------------------------
+
+def leggi_csv(percorso):
+    with open(percorso, newline="", encoding="utf-8-sig") as f:
+        lettore = csv.DictReader(f)
+        colonne = list(lettore.fieldnames or [])
+        righe = list(lettore)
+    for riga in righe:
+        riga["_foglio"] = None
+    return {"formato": "csv", "fogli": [None], "colonne_per_foglio": {None: colonne}, "righe": righe}
+
+
+def leggi_xlsx(percorso):
+    if not OPENPYXL_DISPONIBILE:
+        sys.exit("Serve 'openpyxl' per leggere file .xlsx: pip install openpyxl --break-system-packages")
+
+    wb = load_workbook(percorso, data_only=True)
+    fogli = [nome for nome in wb.sheetnames if nome.strip().lower() != FOGLIO_DA_IGNORARE]
+    if not fogli:
+        sys.exit(f"Nessun foglio dati in {percorso} (solo '{wb.sheetnames}', tutti esclusi come riepilogo).")
+
+    righe = []
+    colonne_per_foglio = {}
+    for nome_foglio in fogli:
+        ws = wb[nome_foglio]
+        righe_ws = list(ws.iter_rows(values_only=True))
+        if not righe_ws:
+            continue
+        intestazione = [canonicalizza_intestazione(c) for c in righe_ws[0]]
+        colonne_per_foglio[nome_foglio] = intestazione
+        for riga_valori in righe_ws[1:]:
+            if all(v is None or str(v).strip() == "" for v in riga_valori):
+                continue
+            riga = {}
+            for indice, nome_colonna in enumerate(intestazione):
+                if not nome_colonna:
+                    continue
+                valore = riga_valori[indice] if indice < len(riga_valori) else None
+                riga[nome_colonna] = "" if valore is None else str(valore).strip()
+            riga["_foglio"] = nome_foglio
+            righe.append(riga)
+
+    return {"formato": "xlsx", "fogli": fogli, "colonne_per_foglio": colonne_per_foglio, "righe": righe}
+
+
+def leggi_contatti(percorso):
+    estensione = Path(percorso).suffix.lower()
+    if estensione == ".csv":
+        return leggi_csv(percorso)
+    if estensione in (".xlsx", ".xlsm"):
+        return leggi_xlsx(percorso)
+    sys.exit(f"Formato non supportato: '{estensione}' (atteso .csv o .xlsx).")
+
+
+# ------------------------- scrittura -------------------------
+
+def scrivi_csv(percorso, dati):
+    colonne = dati["colonne_per_foglio"][None]
+    if "ref" not in colonne:
+        colonne = colonne + ["ref"]
+    with open(percorso, "w", newline="", encoding="utf-8") as f:
+        scrittore = csv.DictWriter(f, fieldnames=colonne, extrasaction="ignore")
+        scrittore.writeheader()
+        scrittore.writerows(dati["righe"])
+
+
+def scrivi_xlsx(percorso, dati):
+    if not OPENPYXL_DISPONIBILE:
+        sys.exit("Serve 'openpyxl' per scrivere file .xlsx: pip install openpyxl --break-system-packages")
+
+    wb = Workbook()
+    wb.remove(wb.active)
+
+    header_fill = PatternFill(start_color=COLORE_HEADER_BG, end_color=COLORE_HEADER_BG, fill_type="solid")
+    header_font = Font(name="Arial", size=11, bold=True, color=COLORE_HEADER_TESTO)
+    body_font = Font(name="Arial", size=10, color="1C1C1A")
+    link_font = Font(name="Arial", size=10, color=COLORE_LINK, underline="single")
+    alt_fill = PatternFill(start_color=COLORE_ALT_RIGA, end_color=COLORE_ALT_RIGA, fill_type="solid")
+    thin = Side(style="thin", color=COLORE_BORDO)
+    bordo = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    for nome_foglio in dati["fogli"]:
+        colonne = dati["colonne_per_foglio"][nome_foglio]
+        if "ref" not in colonne:
+            colonne = colonne + ["ref"]
+        righe_foglio = [r for r in dati["righe"] if r["_foglio"] == nome_foglio]
+
+        ws = wb.create_sheet(nome_foglio)
+        ws.sheet_view.showGridLines = False
+        ws.freeze_panes = "A2"
+
+        for col_idx, nome_colonna in enumerate(colonne, start=1):
+            cell = ws.cell(row=1, column=col_idx, value=nome_colonna.capitalize())
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.border = bordo
+            ws.column_dimensions[get_column_letter(col_idx)].width = 30 if nome_colonna != "link" else 52
+
+        for r_idx, riga in enumerate(righe_foglio, start=2):
+            for c_idx, nome_colonna in enumerate(colonne, start=1):
+                valore = riga.get(nome_colonna, "")
+                cell = ws.cell(row=r_idx, column=c_idx, value=valore)
+                cell.border = bordo
+                cell.alignment = Alignment(vertical="center")
+                if nome_colonna == "link" and valore:
+                    cell.font = link_font
+                    cell.hyperlink = valore
+                else:
+                    cell.font = body_font
+                if r_idx % 2 == 0:
+                    cell.fill = alt_fill
+        if righe_foglio:
+            ws.auto_filter.ref = f"A1:{get_column_letter(len(colonne))}{len(righe_foglio) + 1}"
+
+    wb.save(percorso)
+
+
+def scrivi_contatti(percorso, dati):
+    estensione = Path(percorso).suffix.lower()
+    if estensione == ".csv":
+        scrivi_csv(percorso, dati)
+    elif estensione in (".xlsx", ".xlsm"):
+        scrivi_xlsx(percorso, dati)
+    else:
+        sys.exit(f"Formato di output non supportato: '{estensione}' (atteso .csv o .xlsx).")
+
+
+# ------------------------- logica principale -------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Popola i ref mancanti in una lista contatti")
-    parser.add_argument("csv_contatti", help="CSV con almeno le colonne nome,email (ref opzionale)")
-    parser.add_argument("--out", help="File di output (default: <input>_con_ref.csv)")
+    parser = argparse.ArgumentParser(description="Popola i ref mancanti in una lista contatti (CSV o XLSX)")
+    parser.add_argument("file_contatti", help="CSV o XLSX con almeno le colonne nome,email (ref opzionale)")
+    parser.add_argument("--out", help="File di output (default: <input>_con_ref.<stessa estensione>)")
     args = parser.parse_args()
 
-    percorso_input = Path(args.csv_contatti)
+    percorso_input = Path(args.file_contatti)
     if not percorso_input.exists():
-        sys.exit(f"CSV non trovato: {args.csv_contatti}")
+        sys.exit(f"File non trovato: {args.file_contatti}")
 
     if args.out:
         percorso_output = Path(args.out)
     else:
-        percorso_output = percorso_input.with_name(percorso_input.stem + "_con_ref.csv")
+        percorso_output = percorso_input.with_name(percorso_input.stem + "_con_ref" + percorso_input.suffix)
 
     if percorso_output.resolve() == percorso_input.resolve():
         sys.exit("Il file di output coincide con l'input: scegli un --out diverso, l'input non va mai sovrascritto.")
 
-    with open(percorso_input, newline="", encoding="utf-8-sig") as f:
-        lettore = csv.DictReader(f)
-        colonne = list(lettore.fieldnames)
-        righe = list(lettore)
+    dati = leggi_contatti(percorso_input)
+    righe = dati["righe"]
 
     if not righe:
-        sys.exit("Il CSV e' vuoto.")
-    for colonna in ["nome", "email"]:
-        if colonna not in colonne:
-            sys.exit(f"Colonna '{colonna}' mancante nel CSV (richieste: nome, email).")
-    if "ref" not in colonne:
-        colonne.append("ref")
-        for riga in righe:
+        sys.exit("Nessuna riga di contatti trovata.")
+    for nome_foglio, colonne in dati["colonne_per_foglio"].items():
+        for colonna in ["nome", "email"]:
+            if colonna not in colonne:
+                etichetta = f"foglio '{nome_foglio}'" if nome_foglio else "il CSV"
+                sys.exit(f"Colonna '{colonna}' mancante in {etichetta} (richieste: nome, email).")
+    for riga in righe:
+        if "ref" not in riga:
             riga["ref"] = ""
 
     avvisi = []
 
-    # 1. Censimento email duplicate (stessa persona, non deve avere due ref)
+    # 1. Censimento email duplicate (stessa persona, non deve avere due ref) —
+    #    su TUTTI i fogli insieme, cosi' la stessa persona non riceve due ref
+    #    diversi se compare per errore sia tra gli architetti sia tra le agenzie.
     righe_per_email = {}
     for indice, riga in enumerate(righe):
-        email = normalizza_email(riga["email"])
-        if email not in righe_per_email:
-            righe_per_email[email] = []
-        righe_per_email[email].append(indice)
+        email = normalizza_email(riga.get("email"))
+        righe_per_email.setdefault(email, []).append(indice)
     for email, indici in righe_per_email.items():
         if len(indici) > 1:
-            numeri_riga = [str(i + 2) for i in indici]  # +2: header + 1-based
+            luoghi = [f"riga {i + 2}" + (f" ({righe[i]['_foglio']})" if righe[i]["_foglio"] else "") for i in indici]
             avvisi.append(
-                f"EMAIL DUPLICATA: '{email}' compare {len(indici)} volte (righe {', '.join(numeri_riga)}) — "
+                f"EMAIL DUPLICATA: '{email}' compare {len(indici)} volte ({', '.join(luoghi)}) — "
                 "stessa persona, ricevera' lo stesso ref. Valuta se e' un doppione da rimuovere."
             )
 
-    # 2. Censimento ref gia' assegnati (mai toccati) + controllo formato
+    # 2. Censimento ref gia' assegnati (mai toccati) + controllo formato —
+    #    anche qui su TUTTI i fogli insieme: e' questo che garantisce che un
+    #    ref nuovo per le agenzie non collida con uno gia' usato dagli
+    #    architetti, e viceversa.
     ref_occupati = set()
     for indice, riga in enumerate(righe):
         ref_esistente = (riga.get("ref") or "").strip()
@@ -108,8 +286,9 @@ def main():
         if ref_esistente == "":
             continue
         if not FORMATO_REF.match(ref_esistente):
+            luogo = f"riga {indice + 2}" + (f" ({riga['_foglio']})" if riga["_foglio"] else "")
             avvisi.append(
-                f"FORMATO ANOMALO: riga {indice + 2} ha ref '{ref_esistente}' (atteso: 5 caratteri esadecimali) — "
+                f"FORMATO ANOMALO: {luogo} ha ref '{ref_esistente}' (atteso: 5 caratteri esadecimali) — "
                 "lasciato invariato, ma verifica che sia voluto."
             )
         if ref_esistente in ref_occupati:
@@ -119,14 +298,12 @@ def main():
             )
         ref_occupati.add(ref_esistente)
 
-    # 3. Generazione per le righe senza ref, una email per volta cosi' i
-    #    duplicati della stessa email ricevono lo stesso codice.
+    # 3. Generazione casuale per le righe senza ref, una email per volta cosi'
+    #    i duplicati della stessa email ricevono lo stesso codice.
     ref_per_email = {}
     for email, indici in righe_per_email.items():
         for indice in indici:
             if righe[indice]["ref"] != "":
-                # la persona ha gia' un ref: le eventuali righe duplicate
-                # senza ref lo ereditano, non se ne genera uno nuovo
                 ref_per_email[email] = righe[indice]["ref"]
                 break
 
@@ -141,30 +318,20 @@ def main():
                 ereditati += 1
                 continue
 
-            tentativo = 1
-            codice = genera_codice(email, tentativo)
-            while codice in ref_occupati:
-                avvisi.append(
-                    f"COLLISIONE: il codice '{codice}' per '{email}' (tentativo {tentativo}) e' gia' in uso — "
-                    f"ritento in modo deterministico con chiave '{email}#{tentativo + 1}'."
-                )
-                tentativo += 1
-                codice = genera_codice(email, tentativo)
-
+            codice = genera_codice_casuale(ref_occupati)
             righe[indice]["ref"] = codice
             ref_occupati.add(codice)
             ref_per_email[email] = codice
             generati += 1
 
-    with open(percorso_output, "w", newline="", encoding="utf-8") as f:
-        scrittore = csv.DictWriter(f, fieldnames=colonne)
-        scrittore.writeheader()
-        scrittore.writerows(righe)
+    scrivi_contatti(percorso_output, dati)
 
     for avviso in avvisi:
         print("ATTENZIONE —", avviso)
     print(f"Fatto. {len(righe)} righe scritte in: {percorso_output}")
-    print(f"Ref generati: {generati} | ereditati da email duplicata: {ereditati} | "
+    if len(dati["fogli"]) > 1:
+        print(f"Fogli letti insieme (stesso controllo duplicati/collisioni): {', '.join(dati['fogli'])}")
+    print(f"Ref generati (casuali): {generati} | ereditati da email duplicata: {ereditati} | "
           f"gia' presenti e non toccati: {len(righe) - generati - ereditati}")
 
 

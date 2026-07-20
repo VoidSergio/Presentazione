@@ -51,8 +51,63 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
+
+FOGLIO_CONTATTI_DA_IGNORARE = "riepilogo"
+
+
+def _leggi_righe_grezze(path):
+    """Legge un file .csv o .xlsx come lista di liste di stringhe (una
+    riga = una lista di celle), stesso formato che il resto del parser
+    dell'export GA4 si aspetta da csv.reader. Per .xlsx legge il primo
+    foglio (l'export GA4 'Profilo per contatto' ne ha sempre uno solo)."""
+    estensione = Path(path).suffix.lower()
+    if estensione == ".csv":
+        with open(path, newline="", encoding="utf-8-sig") as f:
+            return [row for row in csv.reader(f)]
+    if estensione in (".xlsx", ".xlsm"):
+        wb = load_workbook(path, data_only=True)
+        ws = wb[wb.sheetnames[0]]
+        righe = []
+        for riga_celle in ws.iter_rows(values_only=True):
+            righe.append(["" if v is None else str(v) for v in riga_celle])
+        return righe
+    sys.exit(f"Formato export non supportato: '{estensione}' (atteso .csv o .xlsx).")
+
+
+def _leggi_contatti_flessibile(path):
+    """Legge il file --contacts come DataFrame con colonne 'ref' e
+    'studio' (o 'nome', poi rinominata). Supporta sia .csv sia .xlsx —
+    per .xlsx unisce TUTTI i fogli tranne uno chiamato 'Riepilogo' (es.
+    Lista_Contatti_Rilievo_Contract.xlsx con le tab Architetti e Agenzie
+    immobiliari insieme), cosi' il report riconosce i contatti di
+    qualunque pubblico dallo stesso file."""
+    estensione = Path(path).suffix.lower()
+    if estensione == ".csv":
+        return pd.read_csv(path, dtype=str, encoding="utf-8-sig")
+    if estensione in (".xlsx", ".xlsm"):
+        wb = load_workbook(path, data_only=True)
+        fogli = [n for n in wb.sheetnames if n.strip().lower() != FOGLIO_CONTATTI_DA_IGNORARE]
+        pezzi = []
+        for nome_foglio in fogli:
+            ws = wb[nome_foglio]
+            righe = list(ws.iter_rows(values_only=True))
+            if not righe:
+                continue
+            intestazione = [str(c).strip().lower() if c is not None else "" for c in righe[0]]
+            dati = [
+                {intestazione[i]: ("" if v is None else str(v)) for i, v in enumerate(riga) if intestazione[i]}
+                for riga in righe[1:]
+                if any(v is not None and str(v).strip() != "" for v in riga)
+            ]
+            if dati:
+                pezzi.append(pd.DataFrame(dati))
+        if not pezzi:
+            sys.exit(f"Nessun contatto trovato in {path} (fogli letti: {fogli}).")
+        return pd.concat(pezzi, ignore_index=True)
+    sys.exit(f"Formato contatti non supportato: '{estensione}' (atteso .csv o .xlsx).")
 
 EXCLUDE_HOST_SUBSTRINGS = ["localhost", "netlify.app"]
 
@@ -167,10 +222,9 @@ def parse_ga4_export(path: str) -> pd.DataFrame:
     - riga 'Totale complessivo' da scartare
     Restituisce un DataFrame con colonne pulite.
     """
-    # utf-8-sig: gli export GA4 spesso hanno il BOM iniziale, che con
-    # "utf-8" semplice finirebbe dentro il nome della prima colonna.
-    with open(path, newline="", encoding="utf-8-sig") as f:
-        raw_lines = [line for line in csv.reader(f)]
+    # _leggi_righe_grezze gestisce sia .csv (con encoding utf-8-sig: gli
+    # export GA4 spesso hanno il BOM iniziale) sia .xlsx.
+    raw_lines = _leggi_righe_grezze(path)
 
     # Rimuovi righe di commento (# ...) e righe completamente vuote
     lines = [
@@ -498,7 +552,7 @@ def _costruisci_canale_anonimo(df_anonimo: pd.DataFrame, event_col: str):
 
 
 def merge_contacts(profile: pd.DataFrame, contacts_path: str) -> pd.DataFrame:
-    contacts = pd.read_csv(contacts_path, dtype=str, encoding="utf-8-sig")
+    contacts = _leggi_contatti_flessibile(contacts_path)
     if "ref" not in contacts.columns:
         raise ValueError("Il file contatti deve avere una colonna 'ref'.")
 
