@@ -107,11 +107,11 @@ export const contatti = {
   titolo: 'Parliamoci.',
   sottotitolo: '20 minuti per iniziare a collaborare.',
   cta: 'Scrivici ora',
-  ctaHref: 'mailto:info@rilievocontract.it',
+  ctaHref: 'mailto:rilievocontract@gmail.com',
   showroom: 'Showroom a Cagliari, Viale Trento 5',
   disponibilita: 'Disponibili per un incontro in tutta la Sardegna',
   telefono: '+39 349 726 5203',
   telefonoHref: 'tel:+393497265203',
-  email: 'info@rilievocontract.it',
+  email: 'rilievocontract@gmail.com',
   brand: 'Un brand Sudlegno · Cagliari, Sardegna',
 };
