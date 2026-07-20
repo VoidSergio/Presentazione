@@ -187,18 +187,31 @@ def main():
             "categoria": studio.get("categoria", ""),
         }
 
+    # citta/categoria: preferisci quelle della lista contatti (fonte di
+    # verita' aggiornata, es. Lista_Contatti_Rilievo_Contract.xlsx le ha
+    # gia' compilate) — quelle preservate dal generatore esistente sono
+    # solo un fallback per liste piu' vecchie/minime che non le hanno
+    # (es. un CSV con solo nome,email,ref). Prima di questa correzione
+    # (20/07/2026) il generatore ignorava sempre citta/categoria della
+    # lista, anche quando erano presenti: bug trovato rigenerando il
+    # generatore agenzie con la lista che le aveva gia' tutte compilate.
     nuovi_studi = []
-    preservati = 0
+    da_lista = 0
+    da_generatore = 0
     for contatto in contatti:
-        extra = extra_per_ref.get(contatto["ref"], {"citta": "", "categoria": ""})
-        if contatto["ref"] in extra_per_ref:
-            preservati += 1
+        extra_generatore = extra_per_ref.get(contatto["ref"], {"citta": "", "categoria": ""})
+        citta = contatto.get("citta", "").strip() or extra_generatore["citta"]
+        categoria = contatto.get("categoria", "").strip() or extra_generatore["categoria"]
+        if contatto.get("citta", "").strip() or contatto.get("categoria", "").strip():
+            da_lista += 1
+        elif contatto["ref"] in extra_per_ref:
+            da_generatore += 1
         nuovi_studi.append({
             "id": contatto.get("id", "").strip(),
             "nome": contatto["nome"].strip(),
-            "citta": extra["citta"],
+            "citta": citta,
             "email": contatto["email"].strip(),
-            "categoria": extra["categoria"],
+            "categoria": categoria,
             "ref": contatto["ref"],
             "link": args.dominio + contatto["ref"],
         })
@@ -208,8 +221,8 @@ def main():
     Path(args.generatore).write_text(html_nuovo, encoding="utf-8")
 
     print(f"Fatto. {len(nuovi_studi)} studi scritti in: {args.generatore}")
-    print(f"citta/categoria preservate per {preservati} studi gia' presenti; "
-          f"{len(nuovi_studi) - preservati} nuovi senza citta/categoria.")
+    print(f"citta/categoria dalla lista contatti: {da_lista} | ereditate dal generatore esistente: {da_generatore} | "
+          f"senza nessuna delle due: {len(nuovi_studi) - da_lista - da_generatore}")
 
 
 if __name__ == "__main__":
