@@ -170,6 +170,23 @@ def scrivi_xlsx(percorso, dati):
     wb = Workbook()
     wb.remove(wb.active)
 
+    # Foglio Riepilogo, sempre rigenerato (mai copiato dall'input): la
+    # lettura ignora deliberatamente un foglio chiamato "Riepilogo" (non e'
+    # dati di contatti), quindi va ricreato qui o si perderebbe ad ogni
+    # giro CSV/XLSX -> genera_ref.py -> XLSX (bug reale, corretto il
+    # 20/07/2026: un primo giro aveva fatto sparire il foglio Riepilogo
+    # da Lista_Contatti_Rilievo_Contract.xlsx).
+    ws_riepilogo = wb.create_sheet("Riepilogo")
+    ws_riepilogo.sheet_view.showGridLines = False
+    ws_riepilogo.column_dimensions["A"].width = 34
+    ws_riepilogo.column_dimensions["B"].width = 14
+    titolo = ws_riepilogo.cell(row=1, column=1, value="Lista contatti — Rilievo Contract")
+    titolo.font = Font(name="Arial", size=14, bold=True, color="1C1C1A")
+    ws_riepilogo.merge_cells("A1:B1")
+    sotto = ws_riepilogo.cell(row=2, column=1, value="Mappatura ref -> contatto, tutti i canali")
+    sotto.font = Font(name="Arial", size=10, italic=True, color="7A7A75")
+    ws_riepilogo.merge_cells("A2:B2")
+
     header_fill = PatternFill(start_color=COLORE_HEADER_BG, end_color=COLORE_HEADER_BG, fill_type="solid")
     header_font = Font(name="Arial", size=11, bold=True, color=COLORE_HEADER_TESTO)
     body_font = Font(name="Arial", size=10, color="1C1C1A")
@@ -177,6 +194,30 @@ def scrivi_xlsx(percorso, dati):
     alt_fill = PatternFill(start_color=COLORE_ALT_RIGA, end_color=COLORE_ALT_RIGA, fill_type="solid")
     thin = Side(style="thin", color=COLORE_BORDO)
     bordo = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    righe_riepilogo = [("Tab", "Contatti")]
+    for nome_foglio in dati["fogli"]:
+        righe_riepilogo.append((nome_foglio, len([r for r in dati["righe"] if r["_foglio"] == nome_foglio])))
+    righe_riepilogo.append(("Totale", len(dati["righe"])))
+
+    start_row = 4
+    for i, (etichetta, valore) in enumerate(righe_riepilogo):
+        r = start_row + i
+        c1 = ws_riepilogo.cell(row=r, column=1, value=etichetta)
+        c2 = ws_riepilogo.cell(row=r, column=2, value=valore)
+        if i == 0:
+            c1.font = header_font
+            c2.font = header_font
+            c1.fill = header_fill
+            c2.fill = header_fill
+        elif i == len(righe_riepilogo) - 1:
+            c1.font = Font(name="Arial", size=10, bold=True, color="1C1C1A")
+            c2.font = Font(name="Arial", size=10, bold=True, color="1C1C1A")
+        else:
+            c1.font = body_font
+            c2.font = body_font
+        c1.border = bordo
+        c2.border = bordo
 
     for nome_foglio in dati["fogli"]:
         colonne = dati["colonne_per_foglio"][nome_foglio]
