@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Generatore email collaborazione — Agenzie immobiliari — Rilievo Contract</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; background: #f0ece6; padding: 24px; margin: 0; }
+  .toolbar { max-width: 600px; margin: 0 auto 20px auto; background: white; border: 1px solid #e0dbd0; border-radius: 8px; padding: 20px; }
+  .toolbar label { display: block; font-size: 12px; color: #6a6864; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-weight: 600; }
+  .toolbar select { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #d9d2c4; border-radius: 4px; margin-bottom: 14px; }
+  .toolbar button { background: #b8954e; color: white; border: none; padding: 12px 24px; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 3px; cursor: pointer; width: 100%; }
+  .toolbar button:hover { background: #a3813f; }
+  .status { margin-top: 10px; font-size: 12px; color: #22c55e; font-weight: 600; text-align: center; min-height: 18px; }
+  .info { font-size: 11px; color: #8a8680; margin-top: 4px; }
+  #emailPreview { max-width: 600px; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <label>Seleziona l'agenzia</label>
+  <select id="studioSelect" onchange="aggiornaEmail()"></select>
+  <div class="info" id="infoEmail"></div>
+  <br>
+  <button onclick="copiaEmail()">Copia email pronta per Gmail</button>
+  <div class="status" id="statusMsg"></div>
+</div>
+
+<div id="emailPreview">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#1c1c1a;">
+<tr>
+<td align="center" style="padding:24px 16px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; background-color:#1c1c1a;">
+
+<tr>
+<td align="center" style="padding:20px 20px 16px 20px;">
+<img src="https://presentazione-agenzie.netlify.app/images/rilievo-gold.png" alt="Rilievo Contract" width="94" style="display:block; width:94px; height:auto; border:0;">
+</td>
+</tr>
+
+<tr>
+<td style="padding:0 20px;">
+<div style="border-top:1px solid #433a27; height:1px; font-size:0; line-height:0;">&nbsp;</div>
+</td>
+</tr>
+
+<tr><td style="height:16px; font-size:0; line-height:0;">&nbsp;</td></tr>
+
+<tr>
+<td style="padding:0;">
+<a id="heroLink" href="#" target="_blank">
+<img src="https://presentazione-agenzie.netlify.app/images/email-hero-agenzie-final.jpg" alt="Rilievo Contract" width="600" height="370" style="display:block; width:100%; max-width:600px; height:auto; border:0;">
+</a>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding:24px 30px 6px 30px;">
+<p style="margin:0; font-family:Georgia, 'Times New Roman', serif; font-size:22px; line-height:1.35; color:#f8f5ef; font-weight:bold;">
+Trasforma ogni compravendita<br>
+<span style="color:#b8954e; font-style:italic;">in un'opportunità in più.</span>
+</p>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding:16px 30px 22px 30px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td align="center" style="background-color:#b8954e; border-radius:2px;">
+<a id="ctaLink" href="#" target="_blank" style="display:inline-block; padding:12px 30px; font-family:Arial, Helvetica, sans-serif; font-size:14px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; color:#1c1c1a; text-decoration:none;">
+Scopri come possiamo collaborare
+</a>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td style="padding:0; font-family:Arial, Helvetica, sans-serif; color:#1c1c1a;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td style="background-color:#f8f5ef; padding:16px 30px 0 30px;">
+<p style="margin:0; font-size:14px; line-height:1.55; color:#1c1c1a;">
+Gentile <span id="nomeStudio">Agenzia</span>,
+</p>
+</td>
+</tr>
+<tr>
+<td style="background-color:#f8f5ef; padding:10px 30px 16px 30px;">
+<p style="margin:0; font-size:14px; line-height:1.55; color:#1c1c1a;">
+Sono Matteo di Rilievo Contract. Lavoriamo con agenzie immobiliari in Sardegna per offrire ai vostri clienti, dopo la compravendita, un servizio in più: dal progetto d'interni alla produzione artigianale su misura, chiavi in mano.
+</p>
+</td>
+</tr>
+<tr>
+<td style="background-color:#f8f5ef; padding:0 30px 16px 30px;">
+<p style="margin:0; font-size:14px; line-height:1.55; color:#1c1c1a;">
+Ci presentate il cliente, noi gestiamo tutto il resto &mdash; e voi ricevete fino al <strong style="color:#8a6f38;">10% di royalties</strong> sulla commessa, pagate a progetto concluso. Tra i nostri progetti: <strong>Palazzo Doglio, Forte Village</strong> e <strong>Prada Luna Rossa</strong>.
+</p>
+</td>
+</tr>
+<tr>
+<td style="background-color:#f8f5ef; padding:0 30px 16px 30px;">
+<p style="margin:0; font-size:14px; line-height:1.55; color:#1c1c1a;">
+Facciamoci una chiacchierata: bastano 10 minuti al telefono per spiegarvi di cosa parliamo. Nel frattempo trovate tutti i dettagli nella presentazione &mdash; teniamoci in contatto.
+</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td style="padding:6px 30px;">
+<div style="border-top:1px solid #433a27; height:1px; font-size:0; line-height:0;">&nbsp;</div>
+</td>
+</tr>
+
+<tr>
+<td style="padding:16px 30px 24px 30px; font-family:Arial, Helvetica, sans-serif; font-size:12px; line-height:1.6; color:#c9c4b8;">
+<strong style="color:#f8f5ef;">Rilievo Contract</strong><br>
+Viale Trento 5, Cagliari<br>
++39 349 726 5203 &nbsp;&middot;&nbsp; <a href="mailto:rilievocontract@gmail.com" style="color:#c9c4b8; text-decoration:underline;">rilievocontract@gmail.com</a>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
+</div>
+
+<script>
+const studi = [{"id": "A1", "nome": "Centocase Sardegna", "citta": "", "email": "info@centocasesardegna.it", "categoria": "Agenzia immobiliare", "ref": "a1f1c", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=a1f1c"}, {"id": "A2", "nome": "Smeraldina Immobiliare", "citta": "", "email": "smeraldinaimmobiliare@gmail.com", "categoria": "Agenzia immobiliare", "ref": "77a3d", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=77a3d"}, {"id": "A3", "nome": "Immobiliare La Maddalena", "citta": "", "email": "immlamaddalena@gmail.com", "categoria": "Agenzia immobiliare", "ref": "18fd2", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=18fd2"}, {"id": "A4", "nome": "Realia Brokers", "citta": "", "email": "info@realiabrokers.com", "categoria": "Agenzia immobiliare", "ref": "70df9", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=70df9"}, {"id": "A5", "nome": "Phoenix Real Estate", "citta": "", "email": "phoenixrealestatesrls@gmail.com", "categoria": "Agenzia immobiliare", "ref": "67910", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=67910"}, {"id": "A6", "nome": "Maior Capital | Forbes Global Properties", "citta": "", "email": "sardinia@maiorcapital.com", "categoria": "Agenzia immobiliare", "ref": "11f28", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=11f28"}, {"id": "A7", "nome": "Gallura Immobiliare", "citta": "", "email": "galluraimmobiliare@virgilio.it", "categoria": "Agenzia immobiliare", "ref": "15eb0", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=15eb0"}, {"id": "A8", "nome": "House & Domos Immobiliare", "citta": "", "email": "info@housedomos.com", "categoria": "Agenzia immobiliare", "ref": "61b12", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=61b12"}, {"id": "A9", "nome": "Il Faro Immobiliare", "citta": "", "email": "info@agenziailfaro.it", "categoria": "Agenzia immobiliare", "ref": "66476", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=66476"}, {"id": "A10", "nome": "Simius Immobiliare", "citta": "", "email": "info@simiusimmobiliare.com", "categoria": "Agenzia immobiliare", "ref": "2c1c5", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=2c1c5"}, {"id": "A11", "nome": "FrauMare Immobiliare", "citta": "", "email": "agenzia@fraumare.com", "categoria": "Agenzia immobiliare", "ref": "f0e2b", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=f0e2b"}, {"id": "A12", "nome": "Casula Immobiliare", "citta": "", "email": "info@casulaimmobiliare.com", "categoria": "Agenzia immobiliare", "ref": "2d044", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=2d044"}, {"id": "A13", "nome": "Ital Home Costa Rei/Villasimius", "citta": "", "email": "villasimius@ital-home.it", "categoria": "Agenzia immobiliare", "ref": "0d759", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=0d759"}, {"id": "A14", "nome": "IMMOVA", "citta": "", "email": "immova2021@gmail.com", "categoria": "Agenzia immobiliare", "ref": "baa1e", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=baa1e"}, {"id": "A15", "nome": "Minvicase", "citta": "", "email": "info@minvicase.it", "categoria": "Agenzia immobiliare", "ref": "24ebd", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=24ebd"}, {"id": "A16", "nome": "La Tua Casa al Mare", "citta": "", "email": "info@latuacasaalmare.it", "categoria": "Agenzia immobiliare", "ref": "8583b", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=8583b"}, {"id": "A17", "nome": "Alghero Ital Home", "citta": "", "email": "alghero@ital-home.it", "categoria": "Agenzia immobiliare", "ref": "3dfa7", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=3dfa7"}, {"id": "A18", "nome": "Agenzia Capo Falcone", "citta": "", "email": "stintino@email.it", "categoria": "Agenzia immobiliare", "ref": "4c4fd", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=4c4fd"}, {"id": "A19", "nome": "Ajò Immobiliare", "citta": "", "email": "info@ajo.casa", "categoria": "Agenzia immobiliare", "ref": "e3d9a", "link": "https://agenzie-immobiliari.rilievocontract.it/?ref=e3d9a"}];
+
+function popolaSelect() {
+  const sel = document.getElementById('studioSelect');
+  studi.forEach((s, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = s.nome + (s.citta ? ' - ' + s.citta : '') + ' (' + s.email + ')';
+    sel.appendChild(opt);
+  });
+  aggiornaEmail();
+}
+
+function aggiornaEmail() {
+  const i = document.getElementById('studioSelect').value;
+  const s = studi[i];
+  document.getElementById('nomeStudio').textContent = s.nome;
+  document.getElementById('heroLink').href = s.link;
+  document.getElementById('ctaLink').href = s.link;
+  document.getElementById('infoEmail').textContent = 'Invia a: ' + s.email + ' | codice ref: ' + s.ref;
+  document.getElementById('statusMsg').textContent = '';
+}
+
+function copiaEmail() {
+  const el = document.getElementById('emailPreview');
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  try {
+    document.execCommand('copy');
+    document.getElementById('statusMsg').textContent = 'Copiato! Ora incolla (Ctrl+V) dentro una nuova email Gmail.';
+  } catch (e) {
+    document.getElementById('statusMsg').textContent = 'Copia manuale: seleziona il riquadro sotto e premi Ctrl+C.';
+  }
+  sel.removeAllRanges();
+}
+
+popolaSelect();
+</script>
+
+</body>
+</html>
