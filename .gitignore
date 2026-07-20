@@ -37,6 +37,12 @@ report_per_contatto*.xlsx
 /*.csv
 /*.xlsx
 
+# ECCEZIONE (20/07/2026): la lista contatti ufficiale (architetti + agenzie
+# immobiliari) e' ora tenuta DENTRO il repo invece che solo in locale —
+# repo privato, e il file perso il 20/07/2026 ha costretto a ricostruire a
+# mano 42 contatti da zero. D'ora in poi la cronologia git e' il backup.
+!/Lista_Contatti_Rilievo_Contract.xlsx
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
